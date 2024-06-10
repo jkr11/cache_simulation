@@ -119,7 +119,10 @@ int main(int argc, char* argv[]) {
             if(!is_valid_csv(inputfile)) {
                 HANDLE_ERROR("Input file must be csv");
             }
-            if(access(inputfile, 0) != 0) {
+
+            //https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
+            //TODO: what platform does this even run on?
+            if(access(inputfile, F_OK) != 0) {
                 HANDLE_ERROR("Input file does not exist");
             }
         }
