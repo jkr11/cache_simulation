@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "cstdlib": "cpp",
+        "types.h": "c",
+        "getopt.h": "c"
+    },
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "/home/jkr/uni/sem4/gra/workspace/systemc/include/**"
+    ],
+}
