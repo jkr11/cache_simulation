@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "../include/types.h"
 #include "../include/csv_parser.h"
+#include "../include/simulation.h"
 // #include "simulation.h"
 
 
@@ -38,7 +39,7 @@ int is_valid_csv(const char *filename) {
 
 int main(int argc, char* argv[]) {
 
-    int opt;
+    
     int cycles;
     unsigned l1CacheLines;
     unsigned l2CacheLines;
@@ -49,6 +50,7 @@ int main(int argc, char* argv[]) {
     const char *tracefile;
     const char *inputfile;
 
+    int opt;
     int optind = 0;
 
     static struct option long_options[] = {
@@ -122,5 +124,12 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+
+    int numRequests;
+    Request* requests = parse_csv(inputfile, &numRequests);
+    
+    Result result;
+    result = run_simulation(cycles, l1CacheLines, l2CacheLines, cacheLineSize, l1CacheLatency, l2CacheLatency, memoryLatency, numRequests, requests, tracefile);
+
     exit(EXIT_SUCCESS);
 }
