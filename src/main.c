@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "../include/types.h"
+#include "../include/util.h"
 #include "../include/csv_parser.h"
 #include "../include/simulation.h"
 // #include "simulation.h"
@@ -34,6 +35,7 @@ int is_valid_csv(const char *filename) {
 }
 
 int main(int argc, char* argv[]) {
+
     int cycles;
     unsigned l1CacheLines;
     unsigned l2CacheLines;
@@ -98,31 +100,30 @@ int main(int argc, char* argv[]) {
         case 'h':
             usage(argv[0]);
             exit(EXIT_SUCCESS);
+            break;
         default:
             usage(argv[0]);
             exit(EXIT_FAILURE);
             break;
+        }    
+    }
+    //this is bugged you need at least one cmd option to run example.csv
+    // now only the .csv is missing
+    // so we can do this by optind
+    if(optind >= argc) {
+        usage(argv[0]);
+        HANDLE_ERROR("Missing filename");
+    } else {
+        inputfile = argv[optind];
+        printf("%s\n", inputfile);
+        if(!is_valid_csv(inputfile)) {
+            HANDLE_ERROR("Input file must be csv");
         }
 
-
-        // now only the .csv is missing
-        // so we can do this by optind
-        //fflush(stdout);
-
-        if(optind >= argc) {
-            usage(argv[0]);
-            HANDLE_ERROR("Missing filename");
-        } else {
-            inputfile = argv[optind];
-            if(!is_valid_csv(inputfile)) {
-                HANDLE_ERROR("Input file must be csv");
-            }
-
-            //https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
-            //TODO: what platform does this even run on?
-            if(access(inputfile, F_OK) != 0) {
-                HANDLE_ERROR("Input file does not exist");
-            }
+        //https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
+        //TODO: what platform does this even run on?
+        if(access(inputfile, F_OK) != 0) {
+            HANDLE_ERROR("Input file does not exist");
         }
     }
 
