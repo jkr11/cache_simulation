@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
 #include "../include/types.h"
 #include "../include/csv_parser.h"
 // #include "simulation.h"
@@ -24,13 +27,30 @@ static void usage(const char *prog_name) {
 }
 
 
+//check that input is a valid csv
+int is_valid_csv(const char *filename) {
+    char *ext = strchr(filename, '.'); 
+    if (!ext) return 0;
+    else {
+        return strcmp("csv", ext+1);
+    }
+}
 
 int main(int argc, char* argv[]) {
 
     int opt;
-    int c,cs,l1l,l2l,l1la,l2la,ml; // TODO: refactor this into struct
-    char *tf;
-    // probably forgot something 
+    int cycles;
+    unsigned l1CacheLines;
+    unsigned l2CacheLines;
+    unsigned cacheLineSize;
+    unsigned l1CacheLatency;
+    unsigned l2CacheLatency;
+    unsigned memoryLatency;
+    const char *tracefile;
+    const char *inputfile;
+
+    int optind = 0;
+
     static struct option long_options[] = {
         {"cycles", required_argument, 0, 'c'},
         {"cacheline-size", required_argument, 0, 1},
@@ -44,40 +64,40 @@ int main(int argc, char* argv[]) {
         {0,0,0,0}
     };
 
-    while((opt = getopt_long(argc, argv, "c:h", long_options, NULL)) != -1) {
+    while((opt = getopt_long(argc, argv, "c:h", long_options, &optind)) != -1) {
         switch (opt)
         {
         case 'c':
-            c = atoi(optarg);
-            printf("cycles: %d\n", c);
+            cycles = atoi(optarg);
+            printf("cycles: %d\n", cycles);
             break;
         case 1:
-            cs = atoi(optarg);
-            printf("cs: %d\n", cs);
+            cacheLineSize = atoi(optarg);
+            printf("cs: %d\n", cacheLineSize);
             break;
         case 2:
-            l1l = atoi(optarg);
-            printf("l1l: %d\n", l1l);
+            l1CacheLines = atoi(optarg);
+            printf("l1l: %d\n", l1CacheLines);
             break;
         case 3:
-            l2l = atoi(optarg);
-            printf("l2l: %d\n", l2l);
+            l2CacheLines = atoi(optarg);
+            printf("l2l: %d\n", l2CacheLines);
             break;
         case 4:
-            l1la = atoi(optarg);
-            printf("l1la: %d\n", l1la);
+            l1CacheLatency = atoi(optarg);
+            printf("l1la: %d\n", l1CacheLatency);
             break;
         case 5:
-            l2la = atoi(optarg);
-            printf("l2la: %d\n", l2la);
+            l2CacheLatency = atoi(optarg);
+            printf("l2la: %d\n", l2CacheLatency);
             break;
         case 6:
-            ml = atoi(optarg);
-            printf("ml: %d\n", ml);
+            memoryLatency = atoi(optarg);
+            printf("ml: %d\n", memoryLatency);
             break;
         case 7:
-            tf = optarg;
-            printf("tf: %s\n", tf);
+            tracefile = optarg;
+            printf("tf: %s\n", tracefile);
             break;
         case 'h':
             usage(argv[0]);
@@ -86,6 +106,20 @@ int main(int argc, char* argv[]) {
             usage(argv[0]);
             exit(EXIT_FAILURE);
             break;
+        }
+        // now only the .csv is missing
+        // so we can do this by optind
+        if(optind >= argc) {
+            usage(argv[0]);
+            HANDLE_ERROR("Missing filename");
+        } else {
+            inputfile = argv[optind];
+            if(!is_valid_csv(inputfile)) {
+                HANDLE_ERROR("Input file must be csv");
+            }
+            if(access(inputfile, 0) != 0) {
+                HANDLE_ERROR("Input file does not exist");
+            }
         }
     }
     exit(EXIT_SUCCESS);
