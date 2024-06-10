@@ -10,7 +10,8 @@ int main() {
 
 	printf("Parsed requests:\n");
 	for(size_t i = 0; i < num_requests; ++i) {
-		printf("Request %zu: addr=%x, data=%x, we=%d\n", i, requests[i].addr, requests[i].data, requests[i].we);
+		printf("%ld: ", i);
+		print_request(&requests[i]);
 	}
 	free(requests);
 	return 0;

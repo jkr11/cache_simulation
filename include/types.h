@@ -1,8 +1,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include<stdint.h> 
-#include<stddef.h> // for size_t 
+#include <stdint.h> 
+#include <stddef.h> // for size_t 
+#include <stdio.h>
 
 typedef struct Request {
 	uint32_t addr;
