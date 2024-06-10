@@ -9,7 +9,7 @@
 #include "../include/simulation.h"
 // #include "simulation.h"
 
-
+#define _DEBUG
 // is printing to stderr correct? NETBSD does it
 static void usage(const char *prog_name) {
     fprintf(stderr, "Usage: %s [options] <input_file>\n", prog_name);
@@ -103,6 +103,8 @@ int main(int argc, char* argv[]) {
             exit(EXIT_FAILURE);
             break;
         }
+
+
         // now only the .csv is missing
         // so we can do this by optind
         //fflush(stdout);
@@ -126,9 +128,14 @@ int main(int argc, char* argv[]) {
 
     size_t numRequests;
     Request* requests = parse_csv(inputfile, &numRequests);
-    
+#ifdef _DEBUG
+    print_requests(requests, numRequests);
+#endif
     Result result;
     result = run_simulation(cycles, l1CacheLines, l2CacheLines, cacheLineSize, l1CacheLatency, l2CacheLatency, memoryLatency, numRequests, requests, tracefile);
 
+#ifdef _DEBUG   
+    print_result(&result);
+#endif
     exit(EXIT_SUCCESS);
 }
