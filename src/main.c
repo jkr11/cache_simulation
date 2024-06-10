@@ -24,22 +24,16 @@ static void usage(const char *prog_name) {
     fprintf(stderr, "--tf=<Dateiname>                Ausgabedatei für ein Tracefile mit allen Signalen. Wenn diese Option nicht gesetzt wird, soll kein Tracefile erstellt werden.\n");
     fprintf(stderr, "<Dateiname>                     Positional Argument: Die Eingabedatei, die die zu verarbeitenden Daten enthält.\n");
     fprintf(stderr, "-h/--help                       Eine Beschreibung aller Optionen des Programms und Verwendungsbeispiele werden ausgegeben und das Programm danach beendet.\n");
-
 }
 
 
 //check that input is a valid csv
 int is_valid_csv(const char *filename) {
     char *ext = strchr(filename, '.'); 
-    if (!ext) return 0;
-    else {
-        return strcmp("csv", ext+1);
-    }
+    return strcmp("csv", ext+1) == 0;
 }
 
 int main(int argc, char* argv[]) {
-
-    
     int cycles;
     unsigned l1CacheLines;
     unsigned l2CacheLines;
@@ -48,10 +42,10 @@ int main(int argc, char* argv[]) {
     unsigned l2CacheLatency;
     unsigned memoryLatency;
     const char *tracefile;
-    const char *inputfile;
+    char *inputfile;
 
     int opt;
-    int optind = 0;
+    int option_ind = 0;
 
     static struct option long_options[] = {
         {"cycles", required_argument, 0, 'c'},
@@ -66,7 +60,7 @@ int main(int argc, char* argv[]) {
         {0,0,0,0}
     };
 
-    while((opt = getopt_long(argc, argv, "c:h", long_options, &optind)) != -1) {
+    while((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) != -1) {
         switch (opt)
         {
         case 'c':
@@ -111,6 +105,8 @@ int main(int argc, char* argv[]) {
         }
         // now only the .csv is missing
         // so we can do this by optind
+        //fflush(stdout);
+
         if(optind >= argc) {
             usage(argv[0]);
             HANDLE_ERROR("Missing filename");
@@ -128,7 +124,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int numRequests;
+    size_t numRequests;
     Request* requests = parse_csv(inputfile, &numRequests);
     
     Result result;
