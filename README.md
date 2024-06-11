@@ -31,9 +31,13 @@ for def all upper snake case
 
 both of these should work now
 
+actually "if tracefile is NULL no tracefile shoud be created" so this should probably be done in main.c
+
 ### Makefile
 
 this might be real hard, as the interop between C <-> C++ <-> systemC is a lot of different paths
+
+also everything needs to be commented
 
 ### systemC part
 
@@ -49,6 +53,21 @@ SC_MODULE(MEMORY) // fallback for when both miss
 
 SC_MODULE(CACHE_CONTROLLER) //ma`ages both L1 and L2 and Memory
 ```
+Reading further, as far as I understand that both storage (memory) and the replacement strategy should be implemented using gates, (maybe we should ask out tutor here).
+
+But what we could do now is:
+
+```C++
+SC_MODULE(Cacheline) { ... }
+
+SC_MODULE(Cache) {
+  ...
+  CacheLine **cachelines;
+  sc_vector<sc_signal<sc_uint<8>>> lru;
+}
+```
+for (relatively) easy LRU replacement.
+ 
 ### other
 
 feel free to add things like utils for printing any structs and other things

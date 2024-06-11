@@ -4,7 +4,7 @@ echo "Cleaning previous builds..."
 make clean
 
 echo "Compiling the project"
-make all
+make source
 
 
 echo "Running project"
