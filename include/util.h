@@ -9,4 +9,4 @@ void print_result(const Result *res);
 
 void print_requests(const Request *requests, size_t num_requests);
 
-#endif // UTIL_H
+#endif  // UTIL_H
