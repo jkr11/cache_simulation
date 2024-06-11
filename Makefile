@@ -1,5 +1,5 @@
 ifndef SYSTEMC_HOME
-SYSTEMC_HOME = /home/jkr/uni/sem4/gra/workspace/systemc
+SYSTEMC_HOME = /home/jkr/uni/sem4/gra/workspace/systemc  # choose your own one here if the path does not work
 endif
 
 
@@ -28,8 +28,15 @@ COBJS = $(CSRC:.c=.o)
 CPPOBJS = $(CPPSRC:.cpp=.o)
 TESTOBJS = $(TESTSRC:.c=.o)
 
+# these are the actual executables
 EXEC = project
 TEST_EXEC = test_project
+
+# Library paths (systemc) and libraries
+
+LDFLAGS = -L$(SYSTEMC_HOME)/lib-linux64
+LIBS = -lsystemc
+
 
 all: $(EXEC) $(TEST_EXEC)
 
