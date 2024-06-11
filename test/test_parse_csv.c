@@ -3,6 +3,7 @@
 
 #include "../include/csv_parser.h"
 #include "../include/types.h"
+#include "../include/util.h"
 
 int main() {
   const char *filename = "example.csv";
