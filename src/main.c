@@ -55,7 +55,7 @@ static void usage(const char *prog_name) {
 // check that input is a valid csv
 int is_valid_csv(const char *filename) {
   char *ext = strchr(filename, '.');
-  return strcmp("csv", ext + 1) == 0;
+  return ext && strcmp("csv", ext + 1) == 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -84,8 +84,7 @@ int main(int argc, char *argv[]) {
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
 
-  while ((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) !=
-         -1) {
+  while ((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) != -1) {
     switch (opt) {
       case 'c':
         cycles = atoi(optarg);
