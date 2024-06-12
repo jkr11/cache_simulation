@@ -12,7 +12,7 @@ CXX = g++
 # Path to systemC installation (how do we build this?)
 SCPATH = ../systemc
 
-#additional compiler flags
+#additional compiler flags  // -Werror for final
 CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
 CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++17
 
