@@ -66,3 +66,20 @@ SC_MODULE(Cache) {
   }
 
 };
+
+SC_MODULE(CacheController) {
+  sc_in<bool> clk;
+
+  // TODO
+
+  Cache* l1_cache;
+  Cache* l2_cache;
+  SC_CTOR(CacheController) {
+    l1_cache = new Cache("L1Cache");
+  }
+
+  ~CacheController() {
+    delete[] l1_cache;
+    delete[] l2_cache;
+  }
+};
