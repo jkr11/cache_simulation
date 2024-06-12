@@ -59,14 +59,16 @@ int is_valid_csv(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-  int cycles;
-  unsigned l1CacheLines;
-  unsigned l2CacheLines;
-  unsigned cacheLineSize;
-  unsigned l1CacheLatency;
-  unsigned l2CacheLatency;
-  unsigned memoryLatency;
-  const char *tracefile;
+
+  // all of these have to be changed;
+  int cycles = 1;
+  unsigned l1CacheLines = 32;
+  unsigned l2CacheLines = 64;
+  unsigned cacheLineSize = 64;
+  unsigned l1CacheLatency = 5;
+  unsigned l2CacheLatency = 15;
+  unsigned memoryLatency = 60;
+  const char *tracefile; // ???   Is this done in systemC or in simulation.cpp
   char *inputfile;
 
   int opt;

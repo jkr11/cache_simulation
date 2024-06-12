@@ -11,7 +11,6 @@ extern "C" {
 #include "types.h"
 
 Result run_simulation(int cycles,
-
                       unsigned l1CacheLines, unsigned l2CacheLines,
                       unsigned cacheLineSize, unsigned l1CacheLatency,
                       unsigned l2CacheLatency, unsigned memoryLatency,
