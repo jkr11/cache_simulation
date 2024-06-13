@@ -142,7 +142,17 @@ int main(int argc, char *argv[]) {
     if (!is_valid_csv(inputfile)) {
       HANDLE_ERROR("Input file must be csv");
     }
-
+  // I personally consider that by interpreting "Inclusivity" of L1 and L2 cache, the "l2CacheLines" should always be greater than "l1CacheLines"
+  if (l2CacheLines<l1CacheLines){
+    HANDLE_ERROR("l2CacheLines should be greater than l1CacheLines");
+  } 
+  // the Latency for l1 should be smaller than for l2,and that for l2 should be smaller than memory Latency
+  if (l2CacheLatency<l1CacheLatency){
+    HANDLE_ERROR("the Latency for l2 should be greater than that for l1");
+  }
+  if (l2CacheLatency>memoryLatency){
+    HANDLE_ERROR("the Latency for memory should be greater than that for l2");
+  }
     // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
     // TODO: what platform does this even run on?
     if (access(inputfile, F_OK) != 0) {

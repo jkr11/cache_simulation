@@ -15,7 +15,9 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
   size_t capacity = 10;
   *num_requests = 0;
   Request *requests = (Request *)malloc(capacity * sizeof(Request));
+  // free before end
   if (!requests) {
+    fclose(file);
     HANDLE_ERROR("malloc requests");
   }
 
@@ -24,24 +26,34 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
     ln++;
     if (*num_requests >= capacity) {
       capacity *= 2;
-      requests = (Request *)realloc(requests, capacity * sizeof(Request));
-      if (!requests) {
+      // I would recommend that we use a new pointer for reallocation
+      // by failure we need to free the space and exit. We would lose the reference to the original space and therefore have a memory leak, which shall lead to a "Punktabzug"
+      Request *newRequests = (Request *)realloc(requests, capacity * sizeof(Request));
+      if (!newRequests) {
+        fclose(file);
+        free(requests);
         HANDLE_ERROR("Realloc failed");
       }
+      requests = newRequests;
     }
     Request *req = &requests[*num_requests];
     char *type_str = strtok(line, ",");
     char *address_str = strtok(NULL, ",");
     char *value_str = strtok(NULL, ",");
-
-    if (!type_str || !address_str || (type_str[0] == 'W' && !value_str)) {
+    // same problem here, we have to free it before it ends
+    // as required in the Aufgabestellung, we need also ensure that by reading, the value should be empty
+    if (!type_str || !address_str || (type_str[0] == 'W' && !value_str)||(type_str[0] == 'R' && value_str)) {
+      fclose(file);
+      free(requests);
       HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
     }
     req->we = (type_str[0] == 'W') ? 1 : 0;
     req->addr = strtoul(address_str, NULL, 0);
     req->data = (value_str) ? strtoul(value_str, NULL, 0) : 0;
-
+    // free before end
     if (req->we != 0 && req->we != 1) {
+      fclose(file);
+      free(requests);
       HANDLE_ERROR_FMT("Invalid request type on line %d\n", ln);
     }
     (*num_requests)++;
