@@ -73,3 +73,14 @@ for (relatively) easy LRU replacement.
 feel free to add things like utils for printing any structs and other things
 
 maybe write logging for systemC (i dont know if this is possible)
+
+# Update on 13.06.2024 by Xuanqi
+
+I have found out some possible problem in csv_parse which ensures no memory leak when failure comes. I have also updated our logic for invalid input in main.c  
+All modifications are commented.
+
+Furthermore, I have established two SystemC module for our own implementation. I have tried to make sure that we can all have maximal freedom to implement our ideas within this frame.
+
+In these files, I have only written the parameters for in- and output, so that when we put our code together, we don't have to be concerned about the compatibility at least between modules.
+
+Have fun guys! 
