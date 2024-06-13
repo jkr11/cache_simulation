@@ -1,5 +1,5 @@
 ifndef SYSTEMC_HOME
-SYSTEMC_HOME = /home/jkr/uni/sem4/gra/workspace/systemc  # choose your own one here if the path does not work
+SYSTEMC_HOME = /home/artem/Desktop/gra_projekt/include/systemc
 endif
 
 
@@ -13,10 +13,8 @@ CXX = g++
 SCPATH = ../systemc
 
 #additional compiler flags  // -Werror for final
-CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
+CFLAGS = -Wall -Wextra -pedantic -g -std=c17
 CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++14
-
-SYSTEMC_HOME = 
 
 INCLUDES = -Iinclude -I$(SYSTEMC_HOME)/include -lm
 
