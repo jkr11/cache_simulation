@@ -59,14 +59,16 @@ int is_valid_csv(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-  int cycles;
-  unsigned l1CacheLines;
-  unsigned l2CacheLines;
-  unsigned cacheLineSize;
-  unsigned l1CacheLatency;
-  unsigned l2CacheLatency;
-  unsigned memoryLatency;
-  const char *tracefile;
+
+  // all of these have to be changed;
+  int cycles = 1;
+  unsigned l1CacheLines = 32;
+  unsigned l2CacheLines = 64;
+  unsigned cacheLineSize = 64;
+  unsigned l1CacheLatency = 5;
+  unsigned l2CacheLatency = 15;
+  unsigned memoryLatency = 60;
+  const char *tracefile; // ???   Is this done in systemC or in simulation.cpp
   char *inputfile;
 
   int opt;
@@ -140,7 +142,17 @@ int main(int argc, char *argv[]) {
     if (!is_valid_csv(inputfile)) {
       HANDLE_ERROR("Input file must be csv");
     }
-
+  // I personally consider that by interpreting "Inclusivity" of L1 and L2 cache, the "l2CacheLines" should always be greater than "l1CacheLines"
+  if (l2CacheLines<l1CacheLines){
+    HANDLE_ERROR("l2CacheLines should be greater than l1CacheLines");
+  } 
+  // the Latency for l1 should be smaller than for l2,and that for l2 should be smaller than memory Latency
+  if (l2CacheLatency<l1CacheLatency){
+    HANDLE_ERROR("the Latency for l2 should be greater than that for l1");
+  }
+  if (l2CacheLatency>memoryLatency){
+    HANDLE_ERROR("the Latency for memory should be greater than that for l2");
+  }
     // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
     // TODO: what platform does this even run on?
     if (access(inputfile, F_OK) != 0) {

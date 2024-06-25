@@ -14,11 +14,9 @@ SCPATH = ../systemc
 
 #additional compiler flags  // -Werror for final
 CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
-CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++17
+CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++14
 
-SYSTEMC_HOME = 
-
-INCLUDES = -Iinclude -I$(SYSTEMC_HOME)/include
+INCLUDES = -Iinclude -I$(SYSTEMC_HOME)/include -lm
 
 CSRC = $(wildcard src/*.c)
 CPPSRC = $(wildcard src/*.cpp)
