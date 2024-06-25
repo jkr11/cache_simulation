@@ -16,8 +16,6 @@ SCPATH = ../systemc
 CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
 CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++14
 
-SYSTEMC_HOME = 
-
 INCLUDES = -Iinclude -I$(SYSTEMC_HOME)/include -lm
 
 CSRC = $(wildcard src/*.c)
