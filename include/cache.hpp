@@ -5,6 +5,7 @@
 
 #include "../include/types.h"
 #include "../include/util.h"
+#include "memory.hpp"
 
 class Cache : public sc_module {
  public:
@@ -51,16 +52,19 @@ class CacheSimulation : public sc_module {
 
   CacheSimulation(sc_module_name name);
   void init(unsigned l1_cache_size, unsigned l2_cache_size,
-            unsigned cache_line_size);
+            unsigned cache_line_size, unsigned l1_latency, unsigned l2_latency,
+            unsigned memory_size);
 
  private:
   Cache l1_cache;
   Cache l2_cache;
+  Memory memory;
 
   sc_signal<uint32_t> l1_data_out;
   sc_signal<bool> l1_hit;
   sc_signal<uint32_t> l2_data_out;
   sc_signal<bool> l2_hit;
+  sc_signal<uint32_t> memory_data_out;
 
   void forward_outputs();
 };

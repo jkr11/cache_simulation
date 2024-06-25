@@ -29,7 +29,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   sim.data_out(data_out);
   sim.hit(hit);
 
-  sim.init(l1CacheLines, l2CacheLines, cacheLineSize);
+  sim.init(l1CacheLines, l2CacheLines, cacheLineSize, l1CacheLatency, l2CacheLatency, memoryLatency);
 
   sc_start(0, SC_NS);
   reset = true;
@@ -52,13 +52,13 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
 
     if (l1_hit) {
       hits++;
-      total_cycles += 1;
+      total_cycles += l1CacheLatency;
     } else if (l2_hit) {
       hits++;
-      total_cycles += 6;
+      total_cycles += l2CacheLatency;
     } else {
       misses++;
-      total_cycles += 11;
+      total_cycles += memoryLatency;
     }
 
     if (!we.read()) {

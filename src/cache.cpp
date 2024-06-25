@@ -8,26 +8,6 @@
 #define L2_CACHE_SIZE 8
 #define CACHE_LINE_SIZE 16
 
-/*
-SC_MODULE(Cache) {
-  sc_in<bool> clk;
-  sc_in<bool> reset;
-  sc_in<uint32_t> address;
-  sc_in<uint32_t> data_in;
-  sc_in<bool> we;
-  sc_out<uint32_t> data_out;
-  sc_out<bool> hit;
-
-  int size;
-  int line_size;
-  int latency;
-  uint32_t* tags;
-  uint32_t* data;
-  int* lru;
-
-  SC_HAS_PROCESS(Cache);
-
-*/
 Cache::Cache(sc_module_name name)
     : sc_module(name),
       size(0),
@@ -120,7 +100,10 @@ void Cache::cache_access() {
 }
 
 CacheSimulation::CacheSimulation(sc_module_name name)
-    : sc_module(name), l1_cache("l1_cache"), l2_cache("l2_cache") {
+    : sc_module(name),
+      l1_cache("l1_cache"),
+      l2_cache("l2_cache"),
+      memory("memory", 1024) {  // how do we handle memory size?
   l1_cache.clk(clk);
   l1_cache.reset(reset);
   l1_cache.address(address);
@@ -137,17 +120,25 @@ CacheSimulation::CacheSimulation(sc_module_name name)
   l2_cache.data_out(l2_data_out);
   l2_cache.hit(l2_hit);
 
-  l1_cache.init(L1_CACHE_SIZE, CACHE_LINE_SIZE, 1);
-  l2_cache.init(L2_CACHE_SIZE, CACHE_LINE_SIZE, 5);
+  memory.clk(clk);
+  memory.reset(reset);
+  memory.address(address);
+  memory.data_in(data_in);
+  memory.we(we);
+  memory.data_out(memory_data_out);
+
+  // l1_cache.init(L1_CACHE_SIZE, CACHE_LINE_SIZE, 1);
+  // l2_cache.init(L2_CACHE_SIZE, CACHE_LINE_SIZE, 5);
 
   SC_METHOD(forward_outputs);
   sensitive << l1_hit << l2_hit;
 }
 
 void CacheSimulation::init(unsigned l1_cache_size, unsigned l2_cache_size,
-                           unsigned cache_line_size) {
-  l1_cache.init(l1_cache_size, cache_line_size, 1);
-  l2_cache.init(l2_cache_size, cache_line_size, 5);
+                           unsigned cache_line_size, unsigned l1_latency,
+                           unsigned l2_latency, unsigned memory_latency) {
+  l1_cache.init(l1_cache_size, cache_line_size, l1_latency);
+  l2_cache.init(l2_cache_size, cache_line_size, l2_latency);
 }
 
 void CacheSimulation::forward_outputs() {
@@ -159,6 +150,8 @@ void CacheSimulation::forward_outputs() {
     hit.write(true);
   } else {
     hit.write(false);
-    data_out.write(0);
+    //data_out.write(0);
+    data_out.write(memory_data_out.read());
+    
   }
 }
