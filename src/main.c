@@ -53,7 +53,7 @@ static void usage(const char *prog_name) {
 }
 
 // check that input is a valid csv
-int is_valid_csv(const char *filename) {
+int is_valid_csv(char *filename) {
   char *ext = strchr(filename, '.');
   return ext && strcmp("csv", ext + 1) == 0;
 }
