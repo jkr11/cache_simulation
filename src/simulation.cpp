@@ -29,7 +29,8 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   sim.data_out(data_out);
   sim.hit(hit);
 
-  sim.init(l1CacheLines, l2CacheLines, cacheLineSize);
+  sim.init(l1CacheLines, l2CacheLines, cacheLineSize, l1CacheLatency,
+           l2CacheLatency, memoryLatency);
 
   sc_start(0, SC_NS);
   reset = true;
@@ -52,22 +53,22 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
 
     if (l1_hit) {
       hits++;
-      total_cycles += 1;
+      total_cycles += l1CacheLatency;
     } else if (l2_hit) {
       hits++;
-      total_cycles += 6;
+      total_cycles += l2CacheLatency;
     } else {
       misses++;
-      total_cycles += 11;
+      total_cycles += memoryLatency;
     }
 
-    if (!we.read()) {
-      std::cout << "Read Address: " << address.read()
-                << " Data: " << data_out.read() << std::endl;
-    } else {
-      std::cout << "Write Address: " << address.read()
-                << " Data: " << data_in.read() << std::endl;
-    }
+    //if (!we.read()) {
+    //  std::cout << "Read Address: " << address.read()
+    //            << " Data: " << data_out.read() << std::endl;
+    //} else {
+    //  std::cout << "Write Address: " << address.read()
+    //            << " Data: " << data_in.read() << std::endl;
+    //}
   }
 
   Result result;
@@ -79,21 +80,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   return result;
 }
 
+
 int sc_main(int argc, char* argv[]) {
-  Request requests[] = {
-      {0x0000, 0xABCD, 0}, {0x0010, 0x1234, 1}, {0x0020, 0x5678, 0},
-      {0x0030, 0x9ABC, 0}, {0x0040, 0xDEF0, 1},
-  };
-
-  unsigned l1_size = 4;
-  unsigned l2_size = 8;
-  unsigned cache_line_size = 16;
-
-  Result result = run_simulation(100, l1_size, l2_size, cache_line_size, 1, 5,
-                                 11, 5, requests, nullptr);
-  print_result(&result);
-  // std::cout << "Cycles: " << result.cycles << " Hits: " << result.hits
-  //           << " Misses: " << result.misses << std::endl;
-
   return 0;
 }
