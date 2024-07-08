@@ -58,6 +58,10 @@ int is_valid_csv(char *filename) {
   return ext && strcmp("csv", ext + 1) == 0;
 }
 
+int is_power_of_two(int n) {
+  return n > 0 && ((n & (n-1)) == 0);
+}
+
 int main(int argc, char *argv[]) {
 
   // all of these have to be changed;
@@ -142,6 +146,11 @@ int main(int argc, char *argv[]) {
     if (!is_valid_csv(inputfile)) {
       HANDLE_ERROR("Input file must be csv");
     }
+  }
+
+  if (!is_power_of_two(cacheLineSize)) {
+    HANDLE_ERROR_FMT("cacheLineSize should be power of two but is %d\n", cacheLineSize);
+  }
   // I personally consider that by interpreting "Inclusivity" of L1 and L2 cache, the "l2CacheLines" should always be greater than "l1CacheLines"
   if (l2CacheLines<l1CacheLines){
     HANDLE_ERROR("l2CacheLines should be greater than l1CacheLines");
@@ -158,7 +167,7 @@ int main(int argc, char *argv[]) {
     if (access(inputfile, F_OK) != 0) {
       HANDLE_ERROR("Input file does not exist");
     }
-  }
+  
 
   size_t numRequests;
   Request *requests = parse_csv(inputfile, &numRequests);
