@@ -58,13 +58,13 @@ int is_valid_csv(const char *filename) {
   return ext && strcmp("csv", ext + 1) == 0;
 }
 
-int main(int argc, char *argv[]) {
+int sc_main(int argc, char *argv[]) {
 
   // all of these have to be changed;
-  int cycles = 1;
-  unsigned l1CacheLines = 32;
-  unsigned l2CacheLines = 64;
-  unsigned cacheLineSize = 64;
+  int cycles = 1000;
+  unsigned l1CacheLines = 1;
+  unsigned l2CacheLines = 1;
+  unsigned cacheLineSize = 4;
   unsigned l1CacheLatency = 5;
   unsigned l2CacheLatency = 15;
   unsigned memoryLatency = 60;
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
   // this is bugged you need at least one cmd option to run example.csv
   //  now only the .csv is missing
   //  so we can do this by optind
-  if (optind >= argc) {
+  if (optind >= argc&&optind!=1) {
     usage(argv[0]);
     HANDLE_ERROR("Missing filename");
   } else {

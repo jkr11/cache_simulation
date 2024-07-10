@@ -42,10 +42,23 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
     char *value_str = strtok(NULL, ",");
     // same problem here, we have to free it before it ends
     // as required in the Aufgabestellung, we need also ensure that by reading, the value should be empty
-    if (!type_str || !address_str || (type_str[0] == 'W' && !value_str)||(type_str[0] == 'R' && value_str)) {
-      fclose(file);
-      free(requests);
-      HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
+    if(!type_str&&!address_str){
+      if(type_str[0] == 'W' && !value_str){
+        fclose(file);
+        free(requests);
+        printf("%s",value_str);
+        HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
+      }
+      if(type_str[0] == 'R'){
+        if(value_str){
+          if(value_str[0]!='\n'){
+            fclose(file);
+            free(requests);
+            printf("%s",value_str);
+            HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
+          }
+        }
+      }
     }
     req->we = (type_str[0] == 'W') ? 1 : 0;
     req->addr = strtoul(address_str, NULL, 0);
