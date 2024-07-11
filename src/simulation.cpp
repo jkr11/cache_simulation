@@ -10,6 +10,8 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
                       unsigned l2CacheLatency, unsigned memoryLatency,
                       size_t numRequests, struct Request requests[],
                       const char *tracefile) {
+  //std::cout.setstate(std::ios_base::failbit);
+
   sc_signal<bool> clk;
 
   sc_signal<bool> writeThrough;
@@ -36,14 +38,13 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   sc_signal<bool> rwFromL2ToMem;
   sc_signal<sc_bv<32>> addressFromL2ToMem;
   sc_signal<sc_bv<32>> dataFromL2ToMem;
-  
-  MEMORY memory("mem",memoryLatency);
-  CACHEL2 l2Cache("l2",l2CacheLatency,l2CacheLines,cacheLineSize);
-  CACHEL1 l1Cache("l1",l1CacheLatency,l1CacheLines,cacheLineSize);
+
+  MEMORY memory("mem", memoryLatency);
+  CACHEL2 l2Cache("l2", l2CacheLatency, l2CacheLines, cacheLineSize);
+  CACHEL1 l1Cache("l1", l1CacheLatency, l1CacheLines, cacheLineSize);
 
   l1Cache.l2 = l2Cache.internal;
   l2Cache.l1 = l1Cache.internal;
-
 
   l1Cache.clk(clk);
   l1Cache.requestIncoming(requestToL1);
@@ -59,7 +60,6 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   l1Cache.ready(readyFromL1);
   l1Cache.outputData(dataFromL1);
   l1Cache.isWriteThrough(writeThrough);
-
 
   l2Cache.clk(clk);
   l2Cache.requestIncoming(requestFromL1ToL2);
@@ -84,12 +84,12 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   memory.wData(dataFromMemToL2);
   memory.ready(readyFromMemToL2);
   sc_trace_file *wf;
-  if(tracefile!=NULL){
+  if (tracefile != NULL) {
     wf = sc_create_vcd_trace_file(tracefile);
-    wf->set_time_unit(1,SC_NS);
+    wf->set_time_unit(1, SC_NS);
 
-    sc_trace(wf, clk,"clock");
-    
+    sc_trace(wf, clk, "clock");
+
     sc_trace(wf, requestToL1, "requestToL1");
     sc_trace(wf, inputDataToL1, "inputDataToL1");
     sc_trace(wf, addressToL1, "addressToL1");
@@ -118,46 +118,47 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   bool allDone = false;
 
   clk.write(true);
-  sc_start(1,SC_NS);
+  sc_start(1, SC_NS);
   clk.write(false);
-  sc_start(1,SC_NS);
+  sc_start(1, SC_NS);
 
   int i;
-  for(i = 0; i < cycles ; i++){
-    if((size_t)indexForInput == numRequests){
-      if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){
+  for (i = 0; i < cycles; i++) {
+    if ((size_t)indexForInput == numRequests) {
+      if (readyFromL1.read() && readyFromL2ToL1.read() &&
+          readyFromMemToL2.read()) {
         allDone = true;
         break;
       }
     }
-    if(readyFromL1.read()&&(size_t)indexForInput<numRequests){
+    if (readyFromL1.read() && (size_t)indexForInput < numRequests) {
       requestToL1.write(true);
       sc_bv<32> addr = requests[indexForInput].addr;
       addressToL1.write(addr);
       sc_bv<32> inData = requests[indexForInput].data;
       inputDataToL1.write(inData);
-      if(requests[indexForInput].we == 0){
+      if (requests[indexForInput].we == 0) {
         rwToL1.write(false);
-      }else{
+      } else {
         rwToL1.write(true);
       }
       indexForInput++;
     }
     clk.write(true);
-    sc_start(1,SC_NS);
+    sc_start(1, SC_NS);
     requestToL1.write(false);
     clk.write(false);
-    sc_start(1,SC_NS);
+    sc_start(1, SC_NS);
   }
   sc_stop();
-  if(tracefile!=NULL){
+  if (tracefile != NULL) {
     sc_close_vcd_trace_file(wf);
   }
-  if(allDone){
-    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),0};
+  if (allDone) {
+    return {(size_t)i, (size_t)(l1Cache.miss + l2Cache.miss),
+            (size_t)(l1Cache.hits + l2Cache.hits), 0};
+  } else {
+    return {SIZE_MAX, (size_t)(l1Cache.miss + l2Cache.miss),
+            (size_t)(l1Cache.hits + l2Cache.hits), 0};
   }
-  else{
-    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), 0};
-  }
-  
 }
