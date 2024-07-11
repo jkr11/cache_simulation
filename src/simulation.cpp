@@ -46,29 +46,35 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
     data_in = requests[i].data;
     we = requests[i].we;
 
-    sc_start(1, SC_NS);
+    sc_start(1, SC_NS);  // Start the clock cycle for the current request
 
-    bool l1_hit = hit.read();
-    bool l2_hit = !l1_hit && sim.hit.read();
-
-    if (l1_hit) {
+    if (hit.read()) {
       hits++;
-      total_cycles += l1CacheLatency;
-    } else if (l2_hit) {
+      total_cycles += l1CacheLatency;  // Hit in L1 cache
+      std::cout << "L1 cache hit at address 0x" << std::hex << requests[i].addr
+                << std::endl;
+    } else if (sim.l2_cache.hit.read()) {
       hits++;
-      total_cycles += l2CacheLatency;
+      total_cycles +=
+          (l1CacheLatency + l2CacheLatency);  // Miss in L1, hit in L2
+      std::cout << "L2 cache hit at address 0x" << std::hex << requests[i].addr
+                << std::endl;
     } else {
       misses++;
-      total_cycles += memoryLatency;
+      total_cycles += (l1CacheLatency + l2CacheLatency +
+                       memoryLatency);  // Miss in both L1 and L2, hit in memory
+      std::cout << "Memory hit at address 0x" << std::hex << requests[i].addr
+                << std::endl;
     }
 
-    //if (!we.read()) {
-    //  std::cout << "Read Address: " << address.read()
-    //            << " Data: " << data_out.read() << std::endl;
-    //} else {
-    //  std::cout << "Write Address: " << address.read()
-    //            << " Data: " << data_in.read() << std::endl;
-    //}
+    // If needed for debugging:
+    if (!we.read()) {
+      std::cout << "Read Address: 0x" << std::hex << address.read()
+                << " Data: " << std::dec << data_out.read() << std::endl;
+    } else {
+      std::cout << "Write Address: 0x" << std::hex << address.read()
+                << " Data: " << std::dec << data_in.read() << std::endl;
+    }
   }
 
   Result result;
@@ -80,7 +86,4 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   return result;
 }
 
-
-int sc_main(int argc, char* argv[]) {
-  return 0;
-}
+int sc_main(int argc, char* argv[]) { return 0; }

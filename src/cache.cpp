@@ -15,7 +15,7 @@ Cache::Cache(sc_module_name name)
       tags(nullptr),
       data(nullptr),
       next_level_memory(nullptr) {
-  SC_METHOD(cache_access);
+  SC_THREAD(cache_access);
   sensitive << clk.pos();
   dont_initialize();
 }
@@ -31,7 +31,7 @@ void Cache::init(int size, int line_size, int latency) {
   this->latency = latency;
 
   tags = new uint32_t[size];
-  data = new uint8_t[size * line_size];  // byte-addressed
+  data = new uint32_t[size * line_size];
 
   for (int i = 0; i < size; ++i) {
     tags[i] = -1;
@@ -45,50 +45,58 @@ bool Cache::access(uint32_t address, uint32_t& out_data, uint32_t in_data,
   uint32_t offset = address & (line_size - 1);
 
   if (tags[index] == tag) {
+    // Cache hit
     if (is_write) {
-      data[index * line_size + offset] = static_cast<uint8_t>(in_data);
-      if (next_level_memory) {
-        next_level_memory->access(address, out_data, in_data, true);
-      }
+      data[index * line_size + offset] = in_data;
+      std::cout << "Cache hit when writing to address 0x" << std::hex << address
+                << " with data " << std::dec << in_data << std::endl;
     }
     out_data = data[index * line_size + offset];
-    std::cout << "Cache Access Address: " << address
-              << " at offset: " << index * line_size + offset << " Data: "
-              << static_cast<uint32_t>(data[index * line_size + offset])
-              << std::endl;
+    std::cout << "Cache hit when reading from address 0x" << std::hex << address
+              << " with data " << std::dec << out_data << std::endl;
+
+    if (is_write && next_level_memory) {
+      next_level_memory->access(address, out_data, in_data, true);
+    }
     return true;
   } else {
-    tags[index] = tag;
-    if (is_write) {
-      data[index * line_size + offset] = static_cast<uint8_t>(in_data);
-      if (next_level_memory) {
-        next_level_memory->access(address, out_data, in_data, true);
-      }
+    // Cache miss
+    if (next_level_memory) {
+      next_level_memory->access(address, out_data, in_data, is_write);
     }
-    out_data = data[index * line_size + offset];
+    if (is_write) {
+      data[index * line_size + offset] = in_data;
+      std::cout << "Cache miss when writing to address 0x" << std::hex
+                << address << " with data " << std::dec << in_data << std::endl;
+    } else {
+      data[index * line_size + offset] = out_data;
+      std::cout << "Cache miss when reading from address 0x" << std::hex
+                << address << " with data " << std::dec << out_data
+                << std::endl;
+    }
+    tags[index] = tag;
     return false;
   }
 }
 
 void Cache::cache_access() {
-  if (reset.read()) {
-    for (int i = 0; i < size; ++i) {
-      tags[i] = -1;
-      for (int j = 0; j < line_size; ++j) {
-        data[i * line_size + j] = 0;
-      }
-    }
-  } else {
-    uint32_t out_data = 0;
-    bool hit_s = access(address.read(), out_data, data_in.read(), we.read());
-    data_out.write(out_data);
-    hit.write(hit_s);
+  while (true) {
+    wait();  // Wait for the clock edge
 
-    if (we.read() && !hit_s) {
-      if (next_level_memory) {
-        next_level_memory->access(address.read(), out_data, data_in.read(),
-                                  true);
+    if (reset.read()) {
+      for (int i = 0; i < size; ++i) {
+        tags[i] = -1;
+        for (int j = 0; j < line_size; ++j) {
+          data[i * line_size + j] = 0;
+        }
       }
+    } else {
+      uint32_t out_data = 0;
+      bool hit_s = access(address.read(), out_data, data_in.read(), we.read());
+      data_out.write(out_data);
+      hit.write(hit_s);
+
+      wait(latency, SC_NS);  // Wait for the latency
     }
   }
 }
@@ -97,7 +105,7 @@ CacheSimulation::CacheSimulation(sc_module_name name)
     : sc_module(name),
       l1_cache("l1_cache"),
       l2_cache("l2_cache"),
-      memory("memory") {  // No need to specify memory size
+      memory("memory") {
   l1_cache.clk(clk);
   l1_cache.reset(reset);
   l1_cache.address(address);
@@ -105,7 +113,7 @@ CacheSimulation::CacheSimulation(sc_module_name name)
   l1_cache.we(we);
   l1_cache.data_out(l1_data_out);
   l1_cache.hit(l1_hit);
-  l1_cache.next_level_memory = &l2_cache;  // Link next level memory
+  l1_cache.next_level_memory = &l2_cache;
 
   l2_cache.clk(clk);
   l2_cache.reset(reset);
@@ -114,7 +122,7 @@ CacheSimulation::CacheSimulation(sc_module_name name)
   l2_cache.we(we);
   l2_cache.data_out(l2_data_out);
   l2_cache.hit(l2_hit);
-  l2_cache.next_level_memory = &memory;  // Link next level memory
+  l2_cache.next_level_memory = &memory;
 
   memory.clk(clk);
   memory.reset(reset);
@@ -123,8 +131,9 @@ CacheSimulation::CacheSimulation(sc_module_name name)
   memory.we(we);
   memory.data_out(memory_data_out);
 
-  SC_METHOD(forward_outputs);
+  SC_THREAD(forward_outputs);
   sensitive << l1_hit << l2_hit;
+  dont_initialize();
 }
 
 void CacheSimulation::init(unsigned l1_cache_size, unsigned l2_cache_size,
@@ -135,14 +144,19 @@ void CacheSimulation::init(unsigned l1_cache_size, unsigned l2_cache_size,
 }
 
 void CacheSimulation::forward_outputs() {
-  if (l1_hit.read()) {
-    data_out.write(l1_data_out.read());
-    hit.write(true);
-  } else if (l2_hit.read()) {
-    data_out.write(l2_data_out.read());
-    hit.write(true);
-  } else {
-    hit.write(false);
-    data_out.write(memory_data_out.read());
+  while (true) {
+    wait();  // Wait for sensitivity list changes
+
+    if (l1_hit.read()) {
+      data_out.write(l1_data_out.read());
+      hit.write(true);
+    } else if (l2_hit.read()) {
+      data_out.write(l2_data_out.read());
+      hit.write(true);
+    } else {
+      hit.write(false);
+      data_out.write(memory_data_out.read());
+    }
+    wait(2);
   }
 }

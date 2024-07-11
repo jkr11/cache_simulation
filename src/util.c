@@ -11,7 +11,7 @@ void print_request(const Request *req) {
 
 void print_aux(const Request *req) {
   printf("\taddr: 0x%08X\n", req->addr);  
-  printf("\tdata: 0x%08X\n", req->data);  
+  printf("\tdata: %ld\n", req->data);  
   printf("\twe: %d\n", req->we);
 }
 

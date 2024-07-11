@@ -17,7 +17,7 @@ class Cache : public MemoryInterface {
   sc_in<uint32_t> data_in;
   sc_out<uint32_t> data_out;
   sc_out<bool> hit;
-
+  int latency;
   SC_HAS_PROCESS(Cache);
 
   Cache(sc_module_name name);
@@ -34,10 +34,9 @@ class Cache : public MemoryInterface {
 
   int size;
   int line_size;
-  int latency;
 
   uint32_t* tags;
-  uint8_t* data;  // byte-addressed
+  uint32_t* data;
 };
 
 class CacheSimulation : public sc_module {
@@ -49,6 +48,8 @@ class CacheSimulation : public sc_module {
   sc_in<uint32_t> data_in;
   sc_out<uint32_t> data_out;
   sc_out<bool> hit;
+  Cache l1_cache;
+  Cache l2_cache;
 
   SC_HAS_PROCESS(CacheSimulation);
 
@@ -61,9 +62,7 @@ class CacheSimulation : public sc_module {
  private:
   void forward_outputs();
 
-  Cache l1_cache;
-  Cache l2_cache;
-  Memory memory;
+    Memory memory;
 
   sc_signal<uint32_t> l1_data_out;
   sc_signal<bool> l1_hit;
