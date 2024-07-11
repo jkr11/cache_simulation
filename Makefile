@@ -1,7 +1,4 @@
-ifndef SYSTEMC_HOME
-SYSTEMC_HOME = /home/xuanqi/GRA/SystemC/systemc-3.0.0  # Adjust to your actual path
-endif
-
+SYSTEMC_HOME = /home/xuanqi/systemc
 # C-Compiler
 CC = gcc
 # C++-Compiler
@@ -9,7 +6,7 @@ CXX = g++
 
 # Compiler flags
 CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
-CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++17 -Iinclude -I$(SYSTEMC_HOME)/include
+CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++14 -Iinclude -I$(SYSTEMC_HOME)/include
 
 # Linker flags
 LDFLAGS = -L$(SYSTEMC_HOME)/lib -lsystemc -lm -lstdc++

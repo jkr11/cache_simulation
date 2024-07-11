@@ -1,5 +1,10 @@
+#ifndef MEMORY_CPP
+#define MEMORY_CPP
+#include <iostream>
+#include <iomanip>
 #include <systemc>
 #include <systemc.h>
+#include <unordered_map>
 
 SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max address and maximal length of Data are 4 Bytes (uint32)
     int latency;
@@ -19,7 +24,7 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
     SC_CTOR(MEMORY);
     MEMORY(sc_module_name name,int latency): sc_module(name){ 
         this->latency = latency;
-        this->latencyWaited = latency;
+        this->latencyWaited = 0;
         SC_THREAD(run);
         sensitive<<clk.pos()<<requestIncoming;
     }
@@ -34,34 +39,37 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
                     wait();
                 }
                 std::cout<<"memory request incomming From L2"<<std::endl;
-                uint32_t address = stoi(addr.read().to_string(),0,2);
+                uint32_t address = addr.read().to_uint();
                 if(rw.read()){ // true for write
+                    std::cout<< "memory recieved data in binary: "<< rData.read().to_string()<<std::endl;
                     for(int i = 0; i< 4; i++){
-                        internal[address+i] = (uint8_t)rData.read().range((i+1)*8-1,i).to_int();
-                        std::cout<< "written into address: "<< address+i<<" with data: "<<  (uint8_t)rData.read().range((i+1)*8-1,i).to_int()<<std::endl;
+                        internal[address+i] = rData.read().range((i+1)*8-1,i*8).to_uint();
+                        std::cout<< "written into address: "<< address+i<<" with data: "<< std::hex << std::setw(1) << std::setfill('0')<< rData.read().range((i+1)*8-1,i*8).to_uint()<<std::endl;
                     }
                 }else{ // false for read
                     sc_bv<32> data;
                     for(int i = 0; i< 4;i++){
                         if (internal.find(address+i)== internal.end()){
-                            data.range((i+1)*8-1,i) = 0x00;
+                            data.range((i+1)*8-1,i*8) = 0x00;
                             std::cout<< "read from address: "<< address+i<<" with data: 0x00"<<std::endl;
                         }
                         else{
-                            data.range((i+1)*8-1,i) = internal[address+i];
-                            std::cout<< "read from address: "<< address+i<<" with data: "<<internal[address+i]<<std::endl;
+                            data.range((i+1)*8-1,i*8) = internal[address+i];
+                            std::cout<< "read from address: "<< address+i<<" with data: "<< std::hex << std::setw(2) << std::setfill('0')<<(int)internal[address+i]<<std::endl;
                             }
                     }
                     wData.write(data);
-                    ready.write(true);
-                    latencyWaited = 0;
-                    std::cout<<"memory finished current operation"<<std::endl;
                 }
+                ready.write(true);
+                std::cout<<"memory finished current operation"<<std::endl;
+                latencyWaited = 0;
             }else{
-                std::cout<<"memory waiting for request"<<std::endl;
+                //std::cout<<"memory waiting for request"<<std::endl;
                 ready.write(true);
             }
         }
     }
      ~MEMORY(){}
 };
+
+#endif

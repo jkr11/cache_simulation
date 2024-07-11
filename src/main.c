@@ -13,6 +13,16 @@
 
 #define _DEBUG
 // is printing to stderr correct? NETBSD does it
+static int is2Potenz(int num){
+  int base = 1;
+  while(base<num){
+    base*=2;
+  }
+  if(base != num){
+    return 0; //false
+  }
+  return 1; // true
+}
 static void usage(const char *prog_name) {
   fprintf(stderr, "Usage: %s [options] <input_file>\n", prog_name);
   fprintf(stderr, "Options:\n");
@@ -59,16 +69,19 @@ int is_valid_csv(const char *filename) {
 }
 
 int sc_main(int argc, char *argv[]) {
-
+  if(argc ==1){
+    usage(argv[0]);
+    exit(EXIT_FAILURE);
+  }
   // all of these have to be changed;
-  int cycles = 1000;
-  unsigned l1CacheLines = 1;
-  unsigned l2CacheLines = 1;
-  unsigned cacheLineSize = 4;
+  int cycles = 10000000;
+  unsigned l1CacheLines = 32;
+  unsigned l2CacheLines = 64;
+  unsigned cacheLineSize = 8;
   unsigned l1CacheLatency = 5;
   unsigned l2CacheLatency = 15;
-  unsigned memoryLatency = 60;
-  const char *tracefile; // ???   Is this done in systemC or in simulation.cpp
+  unsigned memoryLatency = 30;
+  const char *tracefile = NULL; // ???   Is this done in systemC or in simulation.cpp
   char *inputfile;
 
   int opt;
@@ -94,14 +107,29 @@ int sc_main(int argc, char *argv[]) {
         break;
       case 1:
         cacheLineSize = atoi(optarg);
+        if(cacheLineSize<4){
+          HANDLE_ERROR("cache line size must be greater than 4");
+        }
+        if(!is2Potenz(cacheLineSize)){
+          HANDLE_ERROR("cache line size must be power of 2");
+        }
         printf("cs: %d\n", cacheLineSize);
         break;
       case 2:
         l1CacheLines = atoi(optarg);
+        if(!is2Potenz(l1CacheLines)){
+          HANDLE_ERROR("l1 cache lines must be power of 2");
+        }
         printf("l1l: %d\n", l1CacheLines);
         break;
       case 3:
         l2CacheLines = atoi(optarg);
+        if(!is2Potenz(l1CacheLines)){
+          HANDLE_ERROR("l2 cache lines must be power of 2");
+        }
+        if(l2CacheLines < l1CacheLines){
+          HANDLE_ERROR("l2 cache lines must be greater than that of l1");
+        }
         printf("l2l: %d\n", l2CacheLines);
         break;
       case 4:
@@ -110,10 +138,16 @@ int sc_main(int argc, char *argv[]) {
         break;
       case 5:
         l2CacheLatency = atoi(optarg);
+        if(l2CacheLatency<l1CacheLatency){
+          HANDLE_ERROR("l2 Latency must be greater than that of l1");
+        }
         printf("l2la: %d\n", l2CacheLatency);
         break;
       case 6:
         memoryLatency = atoi(optarg);
+        if(memoryLatency < l2CacheLatency){
+          HANDLE_ERROR("memory Latency must be greater than that of l2");
+        }
         printf("ml: %d\n", memoryLatency);
         break;
       case 7:

@@ -18,4 +18,10 @@ typedef struct Result {
   size_t primitiveGateCount;
 } Result;
 
+typedef struct CacheLine{
+  int tag;
+  uint8_t *bytes;
+  int empty;
+}CacheLine;
+
 #endif  // TYPES_H

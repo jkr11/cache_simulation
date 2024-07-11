@@ -41,6 +41,9 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   CACHEL2 l2Cache("l2",l2CacheLatency,l2CacheLines,cacheLineSize);
   CACHEL1 l1Cache("l1",l1CacheLatency,l1CacheLines,cacheLineSize);
 
+  l1Cache.l2 = l2Cache.internal;
+  l2Cache.l1 = l1Cache.internal;
+
 
   l1Cache.clk(clk);
   l1Cache.requestIncoming(requestToL1);
@@ -80,44 +83,54 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   memory.rData(dataFromL2ToMem);
   memory.wData(dataFromMemToL2);
   memory.ready(readyFromMemToL2);
-  
-  sc_trace_file *wf = sc_create_vcd_trace_file("debug");
-  wf->set_time_unit(1,SC_NS);
+  sc_trace_file *wf;
+  if(tracefile!=NULL){
+    wf = sc_create_vcd_trace_file(tracefile);
+    wf->set_time_unit(1,SC_NS);
 
-  sc_trace(wf, clk,"clock");
-  
-  sc_trace(wf, requestToL1, "requestToL1");
-  sc_trace(wf, inputDataToL1, "inputDataToL1");
-  sc_trace(wf, addressToL1, "addressToL1");
-  sc_trace(wf, rwToL1, "rwToL1");
-  sc_trace(wf, readyFromL1, "readyFromL1");
-  sc_trace(wf, dataFromL1, "dataFromL1");
+    sc_trace(wf, clk,"clock");
+    
+    sc_trace(wf, requestToL1, "requestToL1");
+    sc_trace(wf, inputDataToL1, "inputDataToL1");
+    sc_trace(wf, addressToL1, "addressToL1");
+    sc_trace(wf, rwToL1, "rwToL1");
+    sc_trace(wf, readyFromL1, "readyFromL1");
+    sc_trace(wf, dataFromL1, "dataFromL1");
 
-  sc_trace(wf, readyFromL2ToL1, "readyFromL2ToL1");
-  sc_trace(wf, dataFromL2ToL1, "dataFromL2ToL1");
+    sc_trace(wf, readyFromL2ToL1, "readyFromL2ToL1");
+    sc_trace(wf, dataFromL2ToL1, "dataFromL2ToL1");
 
-  sc_trace(wf, requestFromL1ToL2, "requestFromL1ToL2");
-  sc_trace(wf, dataFromL1ToL2, "dataFromL1ToL2");
-  sc_trace(wf, addressFromL1ToL2, "addressFromL1ToL2");
-  sc_trace(wf, rwFromL1ToL2, "rwFromL1ToL2");
+    sc_trace(wf, requestFromL1ToL2, "requestFromL1ToL2");
+    sc_trace(wf, dataFromL1ToL2, "dataFromL1ToL2");
+    sc_trace(wf, addressFromL1ToL2, "addressFromL1ToL2");
+    sc_trace(wf, rwFromL1ToL2, "rwFromL1ToL2");
 
-  sc_trace(wf, readyFromMemToL2, "readyFromMemToL2");
-  sc_trace(wf, dataFromMemToL2, "dataFromMemToL2");
+    sc_trace(wf, readyFromMemToL2, "readyFromMemToL2");
+    sc_trace(wf, dataFromMemToL2, "dataFromMemToL2");
 
-  sc_trace(wf, requestFromL2ToMem, "requestFromL2ToMem");
-  sc_trace(wf, rwFromL2ToMem, "rwFromL2ToMem");
-  sc_trace(wf, addressFromL2ToMem, "addressFromL2ToMem");
-  sc_trace(wf, dataFromL2ToMem, "dataFromL2ToMem");
+    sc_trace(wf, requestFromL2ToMem, "requestFromL2ToMem");
+    sc_trace(wf, rwFromL2ToMem, "rwFromL2ToMem");
+    sc_trace(wf, addressFromL2ToMem, "addressFromL2ToMem");
+    sc_trace(wf, dataFromL2ToMem, "dataFromL2ToMem");
+  }
 
   int indexForInput = 0;
   bool allDone = false;
 
+  clk.write(true);
+  sc_start(1,SC_NS);
+  clk.write(false);
+  sc_start(1,SC_NS);
+
   int i;
   for(i = 0; i < cycles ; i++){
-    clk.write(true);
-    sc_start(1,SC_NS);
-    
-    if(readyFromL1.read()){
+    if((size_t)indexForInput == numRequests){
+      if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){
+        allDone = true;
+        break;
+      }
+    }
+    if(readyFromL1.read()&&(size_t)indexForInput<numRequests){
       requestToL1.write(true);
       sc_bv<32> addr = requests[indexForInput].addr;
       addressToL1.write(addr);
@@ -128,23 +141,23 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
       }else{
         rwToL1.write(true);
       }
-      if(indexForInput == numRequests){
-        allDone = true;
-        break;
-      }
       indexForInput++;
     }
-    clk.write(false);
+    clk.write(true);
     sc_start(1,SC_NS);
     requestToL1.write(false);
+    clk.write(false);
+    sc_start(1,SC_NS);
   }
   sc_stop();
-  sc_close_vcd_trace_file(wf);
+  if(tracefile!=NULL){
+    sc_close_vcd_trace_file(wf);
+  }
   if(allDone){
-    return {i,l1Cache.miss+l2Cache.miss,l1Cache.hits+l2Cache.hits,0};
+    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),0};
   }
   else{
-    return {SIZE_MAX, l1Cache.miss+l2Cache.miss, l1Cache.hits+l2Cache.hits, 0};
+    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), 0};
   }
   
 }
