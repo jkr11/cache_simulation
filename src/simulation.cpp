@@ -125,12 +125,12 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   int i;
   for(i = 0; i < cycles ; i++){
     if((size_t)indexForInput == numRequests){
-      if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){
+      if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){ // wait until all module finish their current operation
         allDone = true;
         break;
       }
     }
-    if(readyFromL1.read()&&(size_t)indexForInput<numRequests){
+    if(readyFromL1.read()&&(size_t)indexForInput<numRequests){ // if l1 is ready for operation
       requestToL1.write(true);
       sc_bv<32> addr = requests[indexForInput].addr;
       addressToL1.write(addr);
@@ -159,5 +159,9 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   else{
     return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), 0};
   }
-  
 }
+int sc_main(int argc, char *argv[]){
+  (void) argc;
+  (void) argv;
+  return 0;
+};

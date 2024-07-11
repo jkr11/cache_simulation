@@ -9,8 +9,7 @@
 #include "types.h"
 #include "cacheL1.cpp"
 
-// here we took assumption that the cacheLineSize mus be greater than 4, for our request comes in 4 bytes
-// currently we took "unaligned access" out of consideration
+
 SC_MODULE(CACHEL2){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -20,25 +19,22 @@ SC_MODULE(CACHEL2){
 
     int miss;
     int hits;
-    int usageCount;
 
-    CacheLine* l1;
+    CacheLine* l1; // the internal storage of l1
 
-    int cacheOffset; // the "offset" for a 32 bit address            tag|index|cacheOffset
+    // tag|index|Offset
     int offsetLength;
     int indexOffset; // the index position for a 32 bit address     
     int indexLength;
     int tagOffset;
-    int tagOffsetInCache;
     int tagbits; // the length of tagbits
-    int dataOffset; // data offset for a cache line    tag|data
 
     int waitingForLatency = 0;
     
     bool isWriteT;
 
     const char* name;
-    sc_in<bool> isWriteThrough;
+    sc_in<bool> isWriteThrough; // if this is a write through request, the hits will not be increased
     sc_in<bool> clk;
     sc_in<bool> requestIncoming;
     sc_in<sc_bv<32>> inputData;
@@ -47,9 +43,9 @@ SC_MODULE(CACHEL2){
 
     // communication with last stage
     sc_in<bool> readyFromLastStage;
-    sc_in<sc_bv<32>> dataFromLastStage;
+    sc_in<sc_bv<32>> dataFromLastStage; // this will give the current index of the internal storage of l1
     sc_out<bool> requestToLastStage;
-    sc_out<bool> rwToLastStage; // here can "last stage" be l2-cache
+    sc_out<bool> rwToLastStage; 
     sc_out<sc_bv<32>> addressToLastStage;
     sc_out<sc_bv<32>> outputToLastStage; // output forward to inside
 
@@ -57,7 +53,7 @@ SC_MODULE(CACHEL2){
     sc_out<sc_bv<32>> outputData; // output to outside
     
 
-    // we can possibly divide these bits into : Tag bits|Data bits|Control bits(dirty)
+    // the internal storage
     CacheLine *internal;
     
     SC_CTOR(CACHEL2);
@@ -72,10 +68,9 @@ SC_MODULE(CACHEL2){
         indexLength = (int)(log(cacheLines)/log(2));
         tagbits = 32 - offsetLength-indexLength;
         tagOffset = 32-tagbits;
-        tagOffsetInCache = 156-tagbits;
+
         indexOffset = 32-tagbits-indexLength;
-        cacheOffset = 32-indexLength+tagbits;
-        dataOffset = 156-tagbits-(8*cacheLineSize);
+
         internal = new CacheLine[cacheLines];
         for(int i = 0; i < cacheLines; i++){
             internal[i].bytes = (uint8_t*)malloc (cacheLineSize*sizeof(uint8_t));
@@ -238,7 +233,7 @@ SC_MODULE(CACHEL2){
         ready.write(true);
         std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
     }
-    void fetchFromLastStage();
+
     void writeThrough(int index){
         sc_bv<32> addressToMem = address.read();
         addressToMem.range(offsetLength-1,0) = 0;//address alignment
@@ -262,6 +257,7 @@ SC_MODULE(CACHEL2){
             addressToMem.range(31,0) = addressToMem.to_int()+4;
         }
     }
+    
     ~CACHEL2(){
         for(int i = 0; i< cacheLines; i++){
             free(internal[i].bytes);

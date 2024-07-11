@@ -8,8 +8,7 @@
 #include <iomanip>
 #include "types.h"
 #include "cacheL2.cpp"
-// here we took assumption that the cacheLineSize mus be greater than 4, for our request comes in 4 bytes
-// currently we took "unaligned access" out of consideration
+
 SC_MODULE(CACHEL1){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -19,20 +18,19 @@ SC_MODULE(CACHEL1){
 
     int miss;
     int hits;
-    int usageCount;
 
-    int cacheOffset; // the "offset" for a 32 bit address            tag|index|cacheOffset
+    //tag|index|cacheOffset
     int offsetLength;
     int indexOffset; // the index position for a 32 bit address     
     int indexLength;
     int tagOffset;
-    int tagOffsetInCache;
-    int tagbits; // the length of tagbits
-    int dataOffset; // data offset for a cache line    tag|data
 
-    int waitingForLatency = 0;
+    int tagbits; // the length of tagbits
+
+
+    int waitingForLatency = 0; // the latency counter
     
-    CacheLine* l2;
+    CacheLine* l2; // the internal storage of l2, for a faster communication with l2
 
     const char* name;
     
@@ -44,7 +42,7 @@ SC_MODULE(CACHEL1){
 
     // communication with last stage
     sc_in<bool> readyFromLastStage;
-    sc_in<sc_bv<32>> dataFromLastStage;
+    sc_in<sc_bv<32>> dataFromLastStage; // Wichtig: for a better communication, this will be the index of the array in l2 storage
     sc_out<bool> requestToLastStage;
     sc_out<bool> rwToLastStage; // here can "last stage" be l2-cache
     sc_out<sc_bv<32>> addressToLastStage;
@@ -53,11 +51,10 @@ SC_MODULE(CACHEL1){
     sc_out<bool> ready; // this component is ready to use
     sc_out<sc_bv<32>> outputData; // output to outside
 
-    sc_out<bool> isWriteThrough;
+    sc_out<bool> isWriteThrough; // the signal to l2, shows that if the current write Request a Write Through is
     
 
-    // we can possibly divide these bits into : Tag bits|Data bits|Control bits(dirty)
-    CacheLine *internal; // 28 tag bits + 128 data bits   the maximal space we need.
+    CacheLine *internal; // the internal storage
     
     SC_CTOR(CACHEL1);
     CACHEL1(sc_module_name name, int latency, int cacheLines,int cacheLineSize) : sc_module(name) {
@@ -70,11 +67,10 @@ SC_MODULE(CACHEL1){
         offsetLength = (int)(log(cacheLineSize)/log(2));
         indexLength = (int)(log(cacheLines)/log(2));
         tagbits = 32 - offsetLength-indexLength;
+
         tagOffset = 32-tagbits;
-        tagOffsetInCache = 156-tagbits;
         indexOffset = 32-tagbits-indexLength;
-        cacheOffset = 32-indexLength+tagbits;
-        dataOffset = 156-tagbits-(8*cacheLineSize);
+
         internal = new CacheLine[cacheLines];
         for(int i = 0; i < cacheLines; i++){
             internal[i].bytes = (uint8_t*)malloc (cacheLineSize*sizeof(uint8_t));
@@ -85,13 +81,13 @@ SC_MODULE(CACHEL1){
         SC_THREAD(run);
         sensitive<<clk.pos()<<requestIncoming;
     }
-    // as required the cache is full associative and shall be replaced with LRU
+    
     void run(){
         while(true){
         wait();
         if(requestIncoming){ // upon request shall the component start to work    
             std::cout<<name<<" received request"<<std::endl;
-            while(waitingForLatency<latency){
+            while(waitingForLatency<latency){ // latency counter
                 ready.write(false); 
                 wait();
                 //std::cout<<name<<" waiting for latency"<< std::endl;
@@ -169,9 +165,9 @@ SC_MODULE(CACHEL1){
             // at this point, the required data is successfully loaded from last stage
             //calculate the offset and change the required data
             int offset = address.read().range(indexOffset-1,0).to_uint();
-            offset = offset & 0xfffffffc;
+            offset = offset & 0xfffffffc; // the address is always 4 Byte aligned
             for(int i = 0; i < 4; i++){
-                internal[index%cacheLines].bytes[offset+i] = inputData.read().range((i+1)*8-1,i*8).to_uint(); // we should check if we need int to uint8 conversion
+                internal[index%cacheLines].bytes[offset+i] = inputData.read().range((i+1)*8-1,i*8).to_uint();
             }
             
             writeThrough(index%cacheLines);
@@ -231,13 +227,13 @@ SC_MODULE(CACHEL1){
             for(int i = 0; i< 4; i++){
                 output_tmp.range((i+1)*8-1,i*8) = internal[index%cacheLines].bytes[offset+i];
             }
-            outputData.write(output_tmp);
+            outputData.write(output_tmp); // here we are able to check if the read information is as expected
             ready.write(true);
             std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() <<" with read data:"<<output_tmp.to_int()<< std::endl;
     }
-    void fetchFromLastStage();
+
     void writeThrough(int index){
-        while(!readyFromLastStage.read()){
+        while(!readyFromLastStage.read()){ // wait until l2 is ready
             wait();
         }
         requestToLastStage.write(true);

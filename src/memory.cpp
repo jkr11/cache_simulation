@@ -10,14 +10,14 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
     int latency;
     sc_in<bool> clk;
 
-    int latencyWaited = 0;
+    int latencyWaited = 0; // the latency counter
     sc_in<bool> requestIncoming;
     sc_in<bool> rw;
     sc_in<sc_bv<32>> addr;
-    sc_in<sc_bv<32>> rData;
+    sc_in<sc_bv<32>> rData; // the incomming data from L2
 
     sc_out<bool> ready;
-    sc_out<sc_bv<32>> wData;
+    sc_out<sc_bv<32>> wData; // output data to L2
     
     std::unordered_map<uint32_t,uint8_t>  internal; // this unordered_map allows the small range of simulation of 4GB memory in PC
 
@@ -32,7 +32,7 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
         while(true){
             wait();
             if(requestIncoming.read()){
-                while (latencyWaited < latency){
+                while (latencyWaited < latency){ // first count the latency then execute the funtionality
                     //std::cout<<"memory waiting for latency"<<std::endl;
                     latencyWaited++;
                     ready.write(false);

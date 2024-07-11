@@ -22,15 +22,15 @@ TESTOBJS = $(TESTSRC:.c=.o)
 
 # Executables
 EXEC = project
-TEST_EXEC = test_project
+#TEST_EXEC = test_project
 
 all: $(EXEC) $(TEST_EXEC)
 
 $(EXEC): $(COBJS) $(CPPOBJS)
 	$(CXX) $(COBJS) $(CPPOBJS) $(LDFLAGS) -o $@
 
-$(TEST_EXEC): $(TESTOBJS) $(COBJS) $(CPPOBJS)
-	$(CXX) $(TESTOBJS) $(COBJS) $(CPPOBJS) $(LDFLAGS) -o $@
+#$(TEST_EXEC): $(TESTOBJS) $(COBJS) $(CPPOBJS)
+#$(CXX) $(TESTOBJS) $(COBJS) $(CPPOBJS) $(LDFLAGS) -o $@
 
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -38,4 +38,4 @@ src/%.o: src/%.c
 src/%.o: src/%.
 
 clean:
-	rm -f $(COBJS) $(CPPOBJS) $(TESTOBJS) $(EXEC) $(TEST_EXEC)
+	rm -f $(COBJS) $(CPPOBJS) $(EXEC) $(TEST_EXEC)
