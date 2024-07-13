@@ -60,6 +60,7 @@ int is_valid_csv(const char *filename) {
   return ext && strcmp("csv", ext + 1) == 0;
 }
 
+
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
 
 #ifdef _OUT
@@ -99,6 +100,7 @@ int sc_main(int argc, char *argv[]) {
   // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf
   unsigned cacheLineSize = 64;
   unsigned l1CacheLines = 32;
+
   unsigned l2CacheLines = 128;  // usually 4 times l1CacheLines
   // and
   // https://colin-scott.github.io/personal_website/research/interactive_latency.html
