@@ -1,4 +1,3 @@
-SYSTEMC_HOME = /home/xuanqi/systemc
 # C-Compiler
 CC = gcc
 # C++-Compiler
