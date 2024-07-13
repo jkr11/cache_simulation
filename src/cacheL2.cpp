@@ -197,7 +197,7 @@ SC_MODULE(CACHEL2){
             addressToLastStage.write(addressToMem);
             wait();
             requestToLastStage.write(false);
-            wait();
+            wait(); // wait for the ready from mem to change
             addressToMem.range(31,0) = addressToMem.to_int()+4;
         }
     }
