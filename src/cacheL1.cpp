@@ -161,7 +161,7 @@ SC_MODULE(CACHEL1){
             ready.write(true);
             std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
         }else{ // the accessed 4 Byte has to be found in 2 Cache lines
-            std::cout<< "start dealing data that can be extracted from one line with lowest address: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_low.to_uint()<<" and highest: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_uint()<<std::endl;
+            std::cout<< "start dealing data that can be extracted from 2 lines with lowest address: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_low.to_uint()<<" and highest: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_uint()<<std::endl;
             // first deal with the first cacheLine
             int t_tmp = addressBV_low.range(31,tagOffset).to_uint();
             int i_tmp = addressBV_low.range(tagOffset-1,indexOffset).to_uint();
@@ -323,6 +323,7 @@ SC_MODULE(CACHEL1){
         wait();
         requestToLastStage.write(false);
         isWriteThrough.write(false);
+        wait();
     }
     int loadFromL2(int addressToLoad){
         while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
@@ -335,7 +336,9 @@ SC_MODULE(CACHEL1){
         addressToLastStage.write(addWire);
         std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
         wait();
+        //std::cout<<name<<" readiness from L2: "<<readyFromLastStage.read()<< std::endl;
         requestToLastStage.write(false);
+        wait(); // wait for the ready signal to change
         while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
             wait();
         }

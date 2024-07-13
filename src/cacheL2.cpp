@@ -138,38 +138,7 @@ SC_MODULE(CACHEL2){
                 std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
                 miss++;
                 hit = false;
-                sc_bv<32> addressToMem; 
-                addressToMem.range(31,0) = address.read().to_int();
-                addressToMem.range(offsetLength-1,0) = 0; // align with the starting address with each line
-                for(int i = 0; i< (int)(cacheLineSize/4);i++){
-                    while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
-                        wait();
-                    }
-                    std::cout<<name<<" with last stage ready, start sending signal to last stage"<< std::endl;
-                    requestToLastStage.write(true);
-                    rwToLastStage.write(false);
-
-                    std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
-                    addressToLastStage.write(addressToMem); // address alignment with 4
-
-                    std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<<  address.read().to_int()<< std::endl;
-                    wait();
-                    requestToLastStage.write(false);
-                    while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
-                        wait();
-                    }
-                    std::cout<<name<<" with last stage ready for data preperation"<< std::endl;
-                    requestToLastStage.write(false);
-                    std::cout<<name<<" received data from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
-                    index = address.read().range(tagOffset-1,indexOffset).to_uint();
-                    internal[index%cacheLines].tag = address.read().range(31,tagOffset).to_uint();
-                    for(int j = i*4; j<(i+1)*4;j++){
-                        internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint(); // big indian
-                    }
-                    // increment of the address by 4
-                    addressToMem.range(31,0) = addressToMem.to_int()+4;
-                }
-                internal[index%cacheLines].empty = 0;
+                index = loadFromMem();
             }
             if(hit&&!isWriteT){
                 std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
@@ -196,38 +165,7 @@ SC_MODULE(CACHEL2){
             std::cout<<name<<" miss by reading with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
             miss++;
             hit = false;
-            sc_bv<32> addressToMem; 
-            addressToMem.range(31,0) = address.read().to_int();
-            addressToMem.range(offsetLength-1,0) = 0; // align with the starting address with each line
-            for(int i = 0; i< (int)(cacheLineSize/4);i++){
-                while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
-                    wait();
-                }
-                std::cout<<name<<" with last stage ready, start sending signal to last stage"<< std::endl;
-                requestToLastStage.write(true);
-                rwToLastStage.write(false);
-                
-                std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
-                addressToLastStage.write(addressToMem); // address alignment with 4
-
-                std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
-                wait();
-                requestToLastStage.write(false);
-                while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
-                    wait();
-                }
-                std::cout<<name<<" with last stage ready for data preperation"<< std::endl;
-                requestToLastStage.write(false);
-                std::cout<<name<<" received data from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
-                index = address.read().range(tagOffset-1,indexOffset).to_uint();
-                internal[index%cacheLines].tag = address.read().range(31,tagOffset).to_uint();
-                for(int j = i*4; j<(i+1)*4;j++){
-                    internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint();
-                }
-                internal[index%cacheLines].empty = 0;
-                // increment of the address by 4
-                addressToMem.range(31,0) = addressToMem.to_int()+4;
-            }
+            index = loadFromMem();
         }
         if(hit){
             std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
@@ -259,6 +197,7 @@ SC_MODULE(CACHEL2){
             addressToLastStage.write(addressToMem);
             wait();
             requestToLastStage.write(false);
+            wait();
             addressToMem.range(31,0) = addressToMem.to_int()+4;
         }
     }
@@ -268,6 +207,43 @@ SC_MODULE(CACHEL2){
             std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
         }
         std::cout<< std::endl;
+    }
+    int loadFromMem(){
+        sc_bv<32> addressToMem; 
+        int index = address.read().range(tagOffset-1,indexOffset).to_uint();;
+        addressToMem.range(31,0) = address.read().to_int();
+        addressToMem.range(offsetLength-1,0) = 0; // align with the starting address with each line
+        for(int i = 0; i< (int)(cacheLineSize/4);i++){
+            while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+                wait();
+            }
+            std::cout<<name<<" with last stage ready, start sending signal to last stage"<< std::endl;
+            requestToLastStage.write(true);
+            rwToLastStage.write(false);
+            
+            std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
+            addressToLastStage.write(addressToMem); // address alignment with 4
+
+            std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
+            wait();
+            requestToLastStage.write(false);
+            wait(); // wait for ready from mem to change
+            while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+                wait();
+            }
+            std::cout<<name<<" with last stage ready for data preperation"<< std::endl;
+            requestToLastStage.write(false);
+            std::cout<<name<<" received data from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
+            internal[index%cacheLines].tag = address.read().range(31,tagOffset).to_uint();
+            for(int j = i*4; j<(i+1)*4;j++){
+                internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint();
+            }
+            internal[index%cacheLines].empty = 0;
+            // increment of the address by 4
+            addressToMem.range(31,0) = addressToMem.to_int()+4;
+        }
+        internal[index%cacheLines].empty = 0;
+        return index;
     }
     ~CACHEL2(){
         for(int i = 0; i< cacheLines; i++){
