@@ -172,8 +172,3 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
     return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), 0};
   }
 }
-int sc_main(int argc, char *argv[]){
-  (void) argc;
-  (void) argv;
-  return 0;
-};

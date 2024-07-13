@@ -98,3 +98,9 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
+
+# .txt
+*.txt
+
+*.vcd
+*.csv.vcd

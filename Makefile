@@ -1,4 +1,3 @@
-SCPATH = SYSTEMC_HOME
 # C-Compiler
 CC = gcc
 # C++-Compiler
