@@ -1,8 +1,11 @@
 #!/bin/bash
 
+MANY_CYCLES=2000000000
+
 LIGHT_GREEN='\033[1;32m'
 LIGHT_RED='\033[1;31m'
 LIGHT_BLUE='\033[1;34m'
+MAGENTA='\033[1;35m'
 NO_COLOR='\033[0m'
 
 echo -en "${LIGHT_BLUE}Cycles: ${NO_COLOR}"
@@ -53,7 +56,25 @@ for INPUTFILE in *.csv; do
 		if diff -q /tmp/test_data_validity/to_test.txt /tmp/test_data_validity/direct_memory.txt > /dev/null; then	
 			echo -e "${LIGHT_GREEN}\tNo difference between the output with and without cache.${NO_COLOR}"
 		else
-			echo -e "${LIGHT_RED}\tThere is a difference, something is wrong.${NO_COLOR}"
+			./project -c $MANY_CYCLES --cacheline-size $LINESIZE --l1-lines $L1LINES --l2-lines $L2LINES --l1-latency $L1LAT --l2-latency $L2LAT --memory-latency $MEMLAT $INPUTFILE > /tmp/test_data_validity/to_test.txt
+
+			./test_data_validity/project -c $MANY_CYCLES --cacheline-size $LINESIZE --l1-lines $L1LINES --l2-lines $L2LINES --l1-latency $L1LAT --l2-latency $L2LAT --memory-latency $MEMLAT $INPUTFILE > /tmp/test_data_validity/direct_memory.txt
+
+
+			sed -i '0,/Info: \/OSCI\/SystemC: Simulation stopped by user\./d' /tmp/test_data_validity/to_test.txt
+
+			sed -i '0,/Info: \/OSCI\/SystemC: Simulation stopped by user\./d' /tmp/test_data_validity/direct_memory.txt
+
+			sed -i '/Result:/,$d' /tmp/test_data_validity/to_test.txt
+
+			sed -i '/Result:/,$d' /tmp/test_data_validity/direct_memory.txt
+
+
+			if diff -q /tmp/test_data_validity/to_test.txt /tmp/test_data_validity/direct_memory.txt > /dev/null; then	
+				echo -e "${MAGENTA}\tThere is a difference, but it was liquidated after using larger CYCLES parameter.${NO_COLOR}"
+			else
+				echo -e "${LIGHT_RED}\tThere is a difference, something is wrong.${NO_COLOR}"
+			fi
 		fi
 	fi
 done

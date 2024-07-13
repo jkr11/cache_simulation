@@ -17,3 +17,15 @@
 	
 	Execute the same command but with ./test_data_validity/project instead of ./project
 	Manually check for differences in the Requests
+
+# first day patch
+
+    It is possible that because of a low value of the parameter "cycles"
+    the tested programm is going to close much earlier than a version in the tester,
+    producing a failure.
+
+    To deal with it, after a failure the tester makes a recheck with a very high value of "cycles" (MANY_CYCLES),
+    and if the test is successful, the special output in magenta color is produced
+
+    For changing MANY_CYCLES, please, change this variable in test_data_validity.sh
+    
