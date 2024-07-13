@@ -130,7 +130,7 @@ SC_MODULE(CACHEL1){
         sc_bv<32> addressBV_high = addressBV_low.to_uint()+3;
         int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
 
-        if(offset_tmp<5){ // the accessed 4 Byte can be found in one Cache line
+        if(offset_tmp<cacheLineSize-3){ // the accessed 4 Byte can be found in one Cache line
             std::cout<< "start dealing data that can be extracted from one line"<<std::endl;
             int t_tmp = address.read().range(31,tagOffset).to_uint();
             int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
@@ -229,7 +229,7 @@ SC_MODULE(CACHEL1){
         sc_bv<32> addressBV_high = addressBV_low.to_uint()+3;
         int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
 
-        if(offset_tmp < 5){ // the read data can be accessed in one cache line
+        if(offset_tmp < cacheLineSize-3){ // the read data can be accessed in one cache line
             int t_tmp = address.read().range(31,tagOffset).to_uint();
             int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
             index = ifExist(t_tmp,i_tmp);
