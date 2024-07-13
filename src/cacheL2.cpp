@@ -123,20 +123,106 @@ SC_MODULE(CACHEL2) {
                     << address.read().to_int() << std::endl;
           read();
         }
+<<<<<<< HEAD
       } else {
         // std::cout<<name<<" waiting for request"<< std::endl;
+=======
+    }
+
+    int ifExist(int tag,int index){ // this method checks if the given address exist in the cache, returns the corresponding array index, and -1 if not exist
+        if(internal[index%cacheLines].empty == 1){
+            return -1;
+        }
+        int tag_tmp = internal[index%cacheLines].tag;
+        if (tag_tmp == tag)
+            return index;
+        return -1;
+    }
+
+    void write(){
+        bool hit = true;
+        int index = -1;
+        int t_tmp = address.read().range(31,tagOffset).to_uint();
+        int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
+        index = ifExist(t_tmp,i_tmp);
+            if(index==-1){ // in the cache there are no such information
+                std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
+                miss++;
+                hit = false;
+                index = loadFromMem();
+            }
+            if(hit&&!isWriteT){
+                std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
+                hits++;
+            }
+            // at this point, the required data is successfully loaded from last stage
+            //calculate the offset and change the required data
+            for(int i = 0; i< cacheLineSize;i++){ // direct communication with l1
+                internal[index%cacheLines].bytes[i] = l1[inputData.read().to_int()].bytes[i];
+            }
+            writeThrough(index%cacheLines);
+            //wait(); //wait for lastStage to exicute and change the request Singnal to false
+            requestToLastStage.write(false);
+        	ready.write(true);
+            std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
+    }
+    void read(){
+        bool hit = true;
+        int index = -1;
+        int t_tmp = address.read().range(31,tagOffset).to_uint();
+        int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
+        index = ifExist(t_tmp,i_tmp);
+        if(index==-1){ // in the cache there are no such information
+            std::cout<<name<<" miss by reading with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
+            miss++;
+            hit = false;
+            index = loadFromMem();
+        }
+        if(hit){
+            std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
+            hits++;
+        }
+        outputData.write(index%cacheLines); // send the index of internal for l1 to gain immediate access to whole cache line
+>>>>>>> Entscheidbarkeit
         ready.write(true);
       }
       waitingForLatency = 0;
     }
   }
 
+<<<<<<< HEAD
   int ifExist(int tag,
               int index) {  // this method checks if the given address exist in
                             // the cache, returns the corresponding array index,
                             // and -1 if not exist
     if (internal[index % cacheLines].empty == 1) {
       return -1;
+=======
+    void writeThrough(int index){
+        sc_bv<32> addressToMem = address.read();
+        addressToMem.range(offsetLength-1,0) = 0;//address alignment
+        printCacheLine(index%cacheLines);
+        for(int i = 0; i< (int)(cacheLineSize/4);i++){
+            while(!readyFromLastStage.read()){
+                wait();
+            }
+            requestToLastStage.write(true);
+            rwToLastStage.write(true);
+            sc_bv<32> data_tmp;
+            for(int j = i*4; j < (i+1)*4; j++){
+                //std::cout<<name<<" write Through data loaded "<< std::hex << std::setw(2) << std::setfill('0')<<(uint32_t)internal[index].bytes[j] << std::endl;
+                data_tmp.range((j-i*4+1)*8-1,(j-i*4)*8) = internal[index].bytes[j];
+            }
+            outputToLastStage.write(data_tmp);
+            std::cout<<name<<" write Through data wired "<< std::hex << std::setw(2) << std::setfill('0')<<data_tmp.to_int() << std::endl;
+            std::cout<<name<<" write Through data wired in binary "<<data_tmp.to_string() << std::endl;
+            addressToLastStage.write(addressToMem);
+            wait();
+            requestToLastStage.write(false);
+            wait(); // wait for the ready from mem to change
+            addressToMem.range(31,0) = addressToMem.to_int()+4;
+        }
+>>>>>>> Entscheidbarkeit
     }
     int tag_tmp = internal[index % cacheLines].tag;
     if (tag_tmp == tag) return index;
@@ -203,6 +289,7 @@ SC_MODULE(CACHEL2) {
       }
       internal[index % cacheLines].empty = 0;
     }
+<<<<<<< HEAD
     if (hit && !isWriteT) {
       std::cout << name << " hit with addr: " << std::hex << std::setw(8)
                 << std::setfill('0') << address.read().to_int() << std::endl;
@@ -242,6 +329,48 @@ SC_MODULE(CACHEL2) {
         while (!readyFromLastStage
                     .read()) {  // keep on waitin until last Stage is ready
           wait();
+=======
+    int loadFromMem(){
+        sc_bv<32> addressToMem; 
+        int index = address.read().range(tagOffset-1,indexOffset).to_uint();;
+        addressToMem.range(31,0) = address.read().to_int();
+        addressToMem.range(offsetLength-1,0) = 0; // align with the starting address with each line
+        for(int i = 0; i< (int)(cacheLineSize/4);i++){
+            while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+                wait();
+            }
+            std::cout<<name<<" with last stage ready, start sending signal to last stage"<< std::endl;
+            requestToLastStage.write(true);
+            rwToLastStage.write(false);
+            
+            std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
+            addressToLastStage.write(addressToMem); // address alignment with 4
+
+            std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
+            wait();
+            requestToLastStage.write(false);
+            wait(); // wait for ready from mem to change
+            while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+                wait();
+            }
+            std::cout<<name<<" with last stage ready for data preperation"<< std::endl;
+            requestToLastStage.write(false);
+            std::cout<<name<<" received data from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
+            internal[index%cacheLines].tag = address.read().range(31,tagOffset).to_uint();
+            for(int j = i*4; j<(i+1)*4;j++){
+                internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint();
+            }
+            internal[index%cacheLines].empty = 0;
+            // increment of the address by 4
+            addressToMem.range(31,0) = addressToMem.to_int()+4;
+        }
+        internal[index%cacheLines].empty = 0;
+        return index;
+    }
+    ~CACHEL2(){
+        for(int i = 0; i< cacheLines; i++){
+            free(internal[i].bytes);
+>>>>>>> Entscheidbarkeit
         }
         std::cout
             << name

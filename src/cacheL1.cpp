@@ -169,6 +169,7 @@ SC_MODULE(CACHEL1) {
         hits++;
       }
 
+<<<<<<< HEAD
       // at this point, the required data is successfully loaded from last stage
       // calculate the offset and change the required data
       int offset = address.read().range(indexOffset - 1, 0).to_uint();
@@ -180,6 +181,35 @@ SC_MODULE(CACHEL1) {
                 .range(31 - i * 8, 31 - (i + 1) * 8 + 1)
                 .to_uint();  // big endian
       }
+=======
+            // at this point, the required data is successfully loaded from last stage
+            //calculate the offset and change the required data
+            int offset = address.read().range(indexOffset-1,0).to_uint();
+            //offset = offset & 0xfffffffc; // the address is always 4 Byte aligned //2.0 We dont need this alignment anymore
+            for(int i = 0; i < 4; i++){
+                internal[index%cacheLines].bytes[offset+i] = inputData.read().range(31-i*8,31-(i+1)*8+1).to_uint(); // big endian
+            }
+            
+            writeThrough(index%cacheLines,address.read().to_uint());
+            //wait(); // wait for lastStage to exicute and change the request Singnal to false
+            requestToLastStage.write(false);
+            ready.write(true);
+            std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
+        }else{ // the accessed 4 Byte has to be found in 2 Cache lines
+            std::cout<< "start dealing data that can be extracted from 2 lines with lowest address: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_low.to_uint()<<" and highest: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_uint()<<std::endl;
+            // first deal with the first cacheLine
+            int t_tmp = addressBV_low.range(31,tagOffset).to_uint();
+            int i_tmp = addressBV_low.range(tagOffset-1,indexOffset).to_uint();
+            index = ifExist(t_tmp,i_tmp);
+            if(index==-1){ // in the cache there are no such information
+                std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
+                hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
+                index = loadFromL2(address.read().to_uint());
+            }
+            if(hit){
+                std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
+            }
+>>>>>>> Entscheidbarkeit
 
       writeThrough(index % cacheLines, address.read().to_uint());
       // wait(); // wait for lastStage to exicute and change the request Singnal
@@ -393,6 +423,7 @@ SC_MODULE(CACHEL1) {
     }
   }
 
+<<<<<<< HEAD
   void writeThrough(int index, int addressToWrite) {
     sc_bv<32> wiredAddr = addressToWrite;
     while (!readyFromLastStage.read()) {  // wait until l2 is ready
@@ -435,6 +466,44 @@ SC_MODULE(CACHEL1) {
     std::cout << name << " received data index from last stage: " << std::hex
               << std::setw(8) << std::setfill('0')
               << dataFromLastStage.read().to_int() << std::endl;
+=======
+    void writeThrough(int index,int addressToWrite){
+        sc_bv<32> wiredAddr = addressToWrite;
+        while(!readyFromLastStage.read()){ // wait until l2 is ready
+            wait();
+        }
+        requestToLastStage.write(true);
+        rwToLastStage.write(true);
+        //by write Throught, we provide a index for l2 to gain immediate access to the whole cache line of l1
+        outputToLastStage.write(index);
+        addressToLastStage.write(wiredAddr);
+        isWriteThrough.write(true);
+        wait();
+        requestToLastStage.write(false);
+        isWriteThrough.write(false);
+        wait();
+    }
+    int loadFromL2(int addressToLoad){
+        while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+            wait();
+        }
+        std::cout<<name<<" with last stage ready, start sending signal to last stage"<< std::endl;
+        requestToLastStage.write(true);
+        rwToLastStage.write(false);
+        sc_bv<32> addWire = addressToLoad;
+        addressToLastStage.write(addWire);
+        std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
+        wait();
+        //std::cout<<name<<" readiness from L2: "<<readyFromLastStage.read()<< std::endl;
+        requestToLastStage.write(false);
+        wait(); // wait for the ready signal to change
+        while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
+            wait();
+        }
+        std::cout<<name<<" with last stage ready for data preperation"<< std::endl;
+        requestToLastStage.write(false);
+        std::cout<<name<<" received data index from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
+>>>>>>> Entscheidbarkeit
 
     int index;
     if (indexLength == 0) {
