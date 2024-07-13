@@ -15,6 +15,7 @@
 #define _OUT
 // is printing to stderr correct? NETBSD does it
 
+
 static void usage(const char *prog_name) {
   fprintf(stderr, "Usage: %s [options] <input_file>\n", prog_name);
   fprintf(stderr, "Options:\n");
@@ -59,6 +60,7 @@ int is_valid_csv(const char *filename) {
   char *ext = strchr(filename, '.');
   return ext && strcmp("csv", ext + 1) == 0;
 }
+
 
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
 
@@ -187,7 +189,7 @@ int sc_main(int argc, char *argv[]) {
         break;
     }
   }
-  // this is bugged you need at least one cmd option to run example.csv
+  // this is bugged you need at least one cmd option to run example.csv -- bug fixed!
   //  now only the .csv is missing
   //  so we can do this by optind
   if (optind >= argc && optind != 1) {
@@ -198,19 +200,6 @@ int sc_main(int argc, char *argv[]) {
     printf("%s\n", inputfile);
     if (!is_valid_csv(inputfile)) {
       HANDLE_ERROR("Input file must be csv");
-    }
-    // I personally consider that by interpreting "Inclusivity" of L1 and L2
-    // cache, the "l2CacheLines" should always be greater than "l1CacheLines"
-    if (l2CacheLines < l1CacheLines) {
-      HANDLE_ERROR("l2CacheLines should be greater than l1CacheLines");
-    }
-    // the Latency for l1 should be smaller than for l2,and that for l2 should
-    // be smaller than memory Latency
-    if (l2CacheLatency < l1CacheLatency) {
-      HANDLE_ERROR("the Latency for l2 should be greater than that for l1");
-    }
-    if (l2CacheLatency > memoryLatency) {
-      HANDLE_ERROR("the Latency for memory should be greater than that for l2");
     }
     // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
     // TODO: what platform does this even run on?
@@ -230,8 +219,10 @@ int sc_main(int argc, char *argv[]) {
                           numRequests, requests, tracefile);
 
 #ifdef _DEBUG
+  print_requests(requests,numRequests); // print requests after execution
   print_result(&result);
 #endif
+
 #ifdef _OUT
   FILE *output_file = fopen("output.txt", "a");
   if (!output_file) {
@@ -244,5 +235,6 @@ int sc_main(int argc, char *argv[]) {
   print_result_to_file(output_file, &result);
   fclose(output_file);
 #endif
+  free(requests);
   exit(EXIT_SUCCESS);
 }

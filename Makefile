@@ -24,6 +24,7 @@ CPPOBJS = $(CPPSRC:.cpp=.o)
 EXEC = project
 
 
+
 all: $(EXEC) 
 $(EXEC): $(COBJS) $(CPPOBJS)
 	$(CXX) $(COBJS) $(CPPOBJS) $(LDFLAGS) -o $@
@@ -36,4 +37,5 @@ src/%.o: src/%.c
 src/%.o: src/%.
 
 clean:
+
 	rm -f $(COBJS) $(CPPOBJS) $(EXEC) 
