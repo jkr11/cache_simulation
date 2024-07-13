@@ -12,19 +12,9 @@
 // #include "simulation.h"
 
 #define _DEBUG
-
-static int is2Potenz(int num){
-  int base = 1;
-  while(base<num){
-    base*=2;
-  }
-  if(base != num){
-    return 0; //false
-  }
-  return 1; // true
-}
-
+#define _OUT
 // is printing to stderr correct? NETBSD does it
+
 static void usage(const char *prog_name) {
   fprintf(stderr, "Usage: %s [options] <input_file>\n", prog_name);
   fprintf(stderr, "Options:\n");
@@ -70,20 +60,54 @@ int is_valid_csv(const char *filename) {
   return ext && strcmp("csv", ext + 1) == 0;
 }
 
-int main(int argc, char *argv[]) {
-  if(argc ==1){
+int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
+
+#ifdef _OUT
+void print_inputs(FILE *file, int cycles, unsigned l1CacheLines,
+                  unsigned l2CacheLines, unsigned cacheLineSize,
+                  unsigned l1CacheLatency, unsigned l2CacheLatency,
+                  unsigned memoryLatency) {
+  fprintf(file, "Simulation Inputs:\n");
+  fprintf(file, "Cycles: %d\n", cycles);
+  fprintf(file, "L1 Cache Lines: %u\n", l1CacheLines);
+  fprintf(file, "L2 Cache Lines: %u\n", l2CacheLines);
+  fprintf(file, "Cache Line Size: %u\n", cacheLineSize);
+  fprintf(file, "L1 Cache Latency: %u\n", l1CacheLatency);
+  fprintf(file, "L2 Cache Latency: %u\n", l2CacheLatency);
+  fprintf(file, "Memory Latency: %u\n", memoryLatency);
+  fprintf(file, "\n");
+}
+
+void print_result_to_file(FILE *file, const Result *result) {
+  fprintf(file, "Simulation Result:\n");
+  fprintf(file, "cycles: %ld\n", result->cycles);
+  fprintf(file, "misses: %ld\n", result->misses);
+  fprintf(file, "hits: %ld\n", result->hits);
+  fprintf(file, "gates: %ld\n", result->primitiveGateCount);
+  fprintf(file, "\n");
+}
+
+#endif
+
+int sc_main(int argc, char *argv[]) {
+  if (argc == 1) {
     usage(argv[0]);
     exit(EXIT_FAILURE);
   }
-  // all of these have to be changed;
+  // can we estimate this at the beginning? at most 2^32 acesses * rough_count
   int cycles = 10000000;
+  // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf
+  unsigned cacheLineSize = 64;
   unsigned l1CacheLines = 32;
-  unsigned l2CacheLines = 64;
-  unsigned cacheLineSize = 8;
-  unsigned l1CacheLatency = 5;
-  unsigned l2CacheLatency = 15;
-  unsigned memoryLatency = 30;
-  const char *tracefile = NULL; // ???   Is this done in systemC or in simulation.cpp
+  unsigned l2CacheLines = 128;  // usually 4 times l1CacheLines
+  // and
+  // https://colin-scott.github.io/personal_website/research/interactive_latency.html
+  // assuming 4 Ghz CPU
+  unsigned l1CacheLatency = 4;
+  unsigned l2CacheLatency = 16;
+  unsigned memoryLatency = 400;
+
+  const char *tracefile = NULL;
   char *inputfile;
 
   int opt;
@@ -101,7 +125,8 @@ int main(int argc, char *argv[]) {
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
 
-  while ((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) != -1) {
+  while ((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) !=
+         -1) {
     switch (opt) {
       case 'c':
         cycles = atoi(optarg);
@@ -109,52 +134,52 @@ int main(int argc, char *argv[]) {
         break;
       case 1:
         cacheLineSize = atoi(optarg);
-        if(cacheLineSize<4){
+        if (cacheLineSize < 4) {
           HANDLE_ERROR("cache line size must be greater than 4");
         }
-        if(!is2Potenz(cacheLineSize)){
+        if (!is_power_of_two(cacheLineSize)) {
           HANDLE_ERROR("cache line size must be power of 2");
         }
-        printf("cs: %d\n", cacheLineSize);
+        printf("cacheLineSize: %d\n", cacheLineSize);
         break;
       case 2:
         l1CacheLines = atoi(optarg);
-        if(!is2Potenz(l1CacheLines)){
+        if (!is_power_of_two(l1CacheLines)) {
           HANDLE_ERROR("l1 cache lines must be power of 2");
         }
-        printf("l1l: %d\n", l1CacheLines);
+        printf("l1CacheLines: %d\n", l1CacheLines);
         break;
       case 3:
         l2CacheLines = atoi(optarg);
-        if(!is2Potenz(l1CacheLines)){
+        if (!is_power_of_two(l1CacheLines)) {
           HANDLE_ERROR("l2 cache lines must be power of 2");
         }
-        if(l2CacheLines < l1CacheLines){
+        if (l2CacheLines < l1CacheLines) {
           HANDLE_ERROR("l2 cache lines must be greater than that of l1");
         }
-        printf("l2l: %d\n", l2CacheLines);
+        printf("l2CacheLines: %d\n", l2CacheLines);
         break;
       case 4:
         l1CacheLatency = atoi(optarg);
-        printf("l1la: %d\n", l1CacheLatency);
+        printf("l1CacheLatency: %d\n", l1CacheLatency);
         break;
       case 5:
         l2CacheLatency = atoi(optarg);
-        if(l2CacheLatency<l1CacheLatency){
+        if (l2CacheLatency < l1CacheLatency) {
           HANDLE_ERROR("l2 Latency must be greater than that of l1");
         }
-        printf("l2la: %d\n", l2CacheLatency);
+        printf("l2CacheLatency: %d\n", l2CacheLatency);
         break;
       case 6:
         memoryLatency = atoi(optarg);
-        if(memoryLatency < l2CacheLatency){
+        if (memoryLatency < l2CacheLatency) {
           HANDLE_ERROR("memory Latency must be greater than that of l2");
         }
-        printf("ml: %d\n", memoryLatency);
+        printf("memoryLatency: %d\n", memoryLatency);
         break;
       case 7:
         tracefile = optarg;
-        printf("tf: %s\n", tracefile);
+        printf("tracefile: %s\n", tracefile);
         break;
       case 'h':
         usage(argv[0]);
@@ -166,10 +191,8 @@ int main(int argc, char *argv[]) {
         break;
     }
   }
-  // this is bugged you need at least one cmd option to run example.csv -- bug fixed!
-  //  now only the .csv is missing
-  //  so we can do this by optind
-  if (optind >= argc&&optind!=1) {
+
+  if (optind >= argc && optind != 1) {
     usage(argv[0]);
     HANDLE_ERROR("Missing filename");
   } else {
@@ -179,7 +202,6 @@ int main(int argc, char *argv[]) {
       HANDLE_ERROR("Input file must be csv");
     }
     // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
-    // TODO: what platform does this even run on?
     if (access(inputfile, F_OK) != 0) {
       HANDLE_ERROR("Input file does not exist");
     }
@@ -196,8 +218,21 @@ int main(int argc, char *argv[]) {
                           numRequests, requests, tracefile);
 
 #ifdef _DEBUG
-  print_requests(requests,numRequests); // print requests after execution
+  print_requests(requests, numRequests);  // print requests after execution with updated data from read
   print_result(&result);
+#endif
+
+#ifdef _OUT
+  FILE *output_file = fopen("output.txt", "a");
+  if (!output_file) {
+    HANDLE_ERROR("Could not open file for writing");
+  }
+
+  print_inputs(output_file, cycles, l1CacheLines, l2CacheLines, cacheLineSize,
+               l1CacheLatency, l2CacheLatency, memoryLatency);
+
+  print_result_to_file(output_file, &result);
+  fclose(output_file);
 #endif
   free(requests);
   exit(EXIT_SUCCESS);

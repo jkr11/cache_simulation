@@ -7,8 +7,7 @@ echo "Compiling the project"
 make project
 
 echo "Generating cache accesses"
-python3 input.py 16
 
-config = "-c 10000000 --cacheline-size 16 --l1-lines 128 --l2-lines 256 --l1-latency 1 --l2-latency 3 --memory-latency 10 --tf=tracefile"
-echo "Running with "
-./project $config cache_accesses.csv
+
+
+./project -c 100000 --cacheline-size 64 --l1-lines 32 --l2-lines 128 --l1-latency 4 --l2-latency 16 --memory-latency 400 --tf=tracefile cache_accesses_32.csv
