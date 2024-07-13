@@ -1,5 +1,5 @@
 #include "../include/simulation.h"
-
+#include "../include/util.h"
 #include "../include/types.h"
 #include "cacheL1.cpp"
 #include "cacheL2.cpp"
@@ -122,15 +122,22 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   clk.write(false);
   sc_start(1,SC_NS);
 
+  bool lastR = false;
   int i;
   for(i = 0; i < cycles ; i++){
     if((size_t)indexForInput == numRequests){
       if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){ // wait until all module finish their current operation
+        if(lastR){// store the last read Data back to request
+          requests[indexForInput-1].data = dataFromL1.read().to_int();
+        }
         allDone = true;
         break;
       }
     }
     if(readyFromL1.read()&&(size_t)indexForInput<numRequests){ // if l1 is ready for operation
+      if(lastR){// store the read Data back to request
+        requests[indexForInput-1].data = dataFromL1.read().to_int();
+      }
       requestToL1.write(true);
       sc_bv<32> addr = requests[indexForInput].addr;
       addressToL1.write(addr);
@@ -138,8 +145,10 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
       inputDataToL1.write(inData);
       if(requests[indexForInput].we == 0){
         rwToL1.write(false);
+        lastR = true;
       }else{
         rwToL1.write(true);
+        lastR = false;
       }
       indexForInput++;
     }
@@ -153,6 +162,9 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   if(tracefile!=NULL){
     sc_close_vcd_trace_file(wf);
   }
+
+
+
   if(allDone){
     return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),0};
   }

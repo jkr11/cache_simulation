@@ -73,7 +73,7 @@ SC_MODULE(CACHEL2){
 
         internal = new CacheLine[cacheLines];
         for(int i = 0; i < cacheLines; i++){
-            internal[i].bytes = (uint8_t*)malloc (cacheLineSize*sizeof(uint8_t));
+            internal[i].bytes = (uint8_t*)calloc (cacheLineSize,sizeof(uint8_t));;
             internal[i].empty = 1;
         }
 
@@ -86,15 +86,19 @@ SC_MODULE(CACHEL2){
         while(true){
             wait();
         
-        if(requestIncoming){ // upon request shall the component start to work   
+        if(requestIncoming.read()){ // upon request shall the component start to work   
             std::cout<<name<<" received request:"<< requestIncoming.read()<<std::endl;
             isWriteT = isWriteThrough.read(); 
-            while(waitingForLatency<latency){
-                ready.write(false); 
-                wait();
-                //std::cout<<name<<" waiting for latency"<< std::endl;
-                waitingForLatency++;
-            }     
+            ready.write(false); 
+            wait(latency*2,SC_NS);
+                /*
+                while(waitingForLatency<latency){ // latency counter
+                    ready.write(false); 
+                    wait();
+                    //std::cout<<name<<" waiting for latency"<< std::endl;
+                    waitingForLatency++;
+                }     
+                */  
             if(rw.read()){ // write enable
                 int receivedData = 0;
                 for(int i = 0; i< cacheLineSize;i++){
@@ -148,7 +152,7 @@ SC_MODULE(CACHEL2){
                     std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
                     addressToLastStage.write(addressToMem); // address alignment with 4
 
-                    std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToLastStage.read().to_int()<<" with original addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
+                    std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<<  address.read().to_int()<< std::endl;
                     wait();
                     requestToLastStage.write(false);
                     while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
@@ -160,7 +164,7 @@ SC_MODULE(CACHEL2){
                     index = address.read().range(tagOffset-1,indexOffset).to_uint();
                     internal[index%cacheLines].tag = address.read().range(31,tagOffset).to_uint();
                     for(int j = i*4; j<(i+1)*4;j++){
-                        internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint();
+                        internal[index%cacheLines].bytes[j] = dataFromLastStage.read().range((j-i*4+1)*8-1,(j-i*4)*8).to_uint(); // big indian
                     }
                     // increment of the address by 4
                     addressToMem.range(31,0) = addressToMem.to_int()+4;
@@ -206,7 +210,7 @@ SC_MODULE(CACHEL2){
                 std::cout<<name<<" aligned addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToMem.to_int()<< std::endl;
                 addressToLastStage.write(addressToMem); // address alignment with 4
 
-                std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< addressToLastStage.read().to_int()<<" with original addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
+                std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
                 wait();
                 requestToLastStage.write(false);
                 while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
@@ -237,6 +241,7 @@ SC_MODULE(CACHEL2){
     void writeThrough(int index){
         sc_bv<32> addressToMem = address.read();
         addressToMem.range(offsetLength-1,0) = 0;//address alignment
+        printCacheLine(index%cacheLines);
         for(int i = 0; i< (int)(cacheLineSize/4);i++){
             while(!readyFromLastStage.read()){
                 wait();
@@ -257,7 +262,13 @@ SC_MODULE(CACHEL2){
             addressToMem.range(31,0) = addressToMem.to_int()+4;
         }
     }
-    
+    void printCacheLine(int index){
+        std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
+        for(int i = 0; i< cacheLineSize;i++){
+            std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
+        }
+        std::cout<< std::endl;
+    }
     ~CACHEL2(){
         for(int i = 0; i< cacheLines; i++){
             free(internal[i].bytes);

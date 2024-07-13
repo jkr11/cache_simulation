@@ -196,6 +196,7 @@ int main(int argc, char *argv[]) {
                           numRequests, requests, tracefile);
 
 #ifdef _DEBUG
+  print_requests(requests,numRequests); // print requests after execution
   print_result(&result);
 #endif
   free(requests);

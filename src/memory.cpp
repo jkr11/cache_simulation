@@ -32,12 +32,14 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
         while(true){
             wait();
             if(requestIncoming.read()){
-                while (latencyWaited < latency){ // first count the latency then execute the funtionality
+                ready.write(false);
+                /*while (latencyWaited < latency){ // first count the latency then execute the funtionality
                     //std::cout<<"memory waiting for latency"<<std::endl;
                     latencyWaited++;
                     ready.write(false);
                     wait();
-                }
+                }*/
+                wait(2*latency,SC_NS);
                 std::cout<<"memory request incomming From L2"<<std::endl;
                 uint32_t address = addr.read().to_uint();
                 if(rw.read()){ // true for write
