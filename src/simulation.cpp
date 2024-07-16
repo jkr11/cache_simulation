@@ -117,6 +117,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   int indexForInput = 0;
   bool allDone = false;
 
+  // one tick for initialization
   clk.write(true);
   sc_start(1,SC_NS);
   clk.write(false);
