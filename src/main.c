@@ -146,6 +146,9 @@ int sc_main(int argc, char *argv[]) {
         break;
       case 2:
         l1CacheLines = atoi(optarg);
+        if (l1CacheLines<2){
+          HANDLE_ERROR("l1 cache lines must be greater than 2 to handel unaligned access sensible");
+        }
         if (!is_power_of_two(l1CacheLines)) {
           HANDLE_ERROR("l1 cache lines must be power of 2");
         }

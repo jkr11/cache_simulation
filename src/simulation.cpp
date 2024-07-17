@@ -38,7 +38,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   sc_signal<sc_bv<32>> dataFromL2ToMem;
   
   MEMORY memory("mem",memoryLatency);
-  CACHEL2 l2Cache("l2",l2CacheLatency,l2CacheLines,cacheLineSize);
+  CACHEL2 l2Cache("l2",l2CacheLatency,l2CacheLines,cacheLineSize,l1CacheLines);
   CACHEL1 l1Cache("l1",l1CacheLatency,l1CacheLines,cacheLineSize);
 
   l1Cache.l2 = l2Cache.internal;

@@ -9,6 +9,8 @@
 #include "types.h"
 #include "cacheL2.cpp"
 
+//#define L1_DETAIL
+
 SC_MODULE(CACHEL1){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -88,7 +90,7 @@ SC_MODULE(CACHEL1){
             if(requestIncoming.read()){ // upon request shall the component start to work    
                 std::cout<<name<<" received request at time: "<<sc_time_stamp()<<std::endl;
                 ready.write(false); 
-                wait(latency*2,SC_NS);
+                
                 /*
                 while(waitingForLatency<latency){ // latency counter
                     ready.write(false); 
@@ -101,8 +103,9 @@ SC_MODULE(CACHEL1){
                     #ifdef L1_DETAIL
                     std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<<inputData.read().to_int()<< std::endl;
                     #endif
-                    write();
+                    write(); // by writeThrough we only expect a latency of Memory, therefore the latency of write() is considered later
                 }else{
+                    wait(latency*2,SC_NS); 
                     #ifdef L1_DETAIL
                     std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
                     #endif
@@ -147,6 +150,7 @@ SC_MODULE(CACHEL1){
                 #endif
                 miss++;
                 hit = false;
+                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -184,6 +188,7 @@ SC_MODULE(CACHEL1){
                 std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
                 #endif
                 hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
+                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -201,7 +206,7 @@ SC_MODULE(CACHEL1){
                 internal[index%cacheLines].bytes[offset+i] = inputData.read().range(31-i*8,31-(i+1)*8+1).to_uint();
             }
             printCacheLine(index%cacheLines);
-            writeThrough(index%cacheLines,address.read().to_uint());
+            int oldIndex = index;
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             #ifdef L1_DETAIL
@@ -236,7 +241,8 @@ SC_MODULE(CACHEL1){
                 internal[index%cacheLines].bytes[j-i] = inputData.read().range(31-j*8,31-(j+1)*8+1).to_uint();
             }
             printCacheLine(index%cacheLines);
-            writeThrough(index%cacheLines,addressBV_high.to_uint());
+            //writeThrough(index%cacheLines,addressBV_high.to_uint());
+            writeThrough(oldIndex,address.read().to_uint());
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             ready.write(true);
@@ -362,11 +368,15 @@ SC_MODULE(CACHEL1){
         rwToLastStage.write(true);
         //by write Throught, we provide a index for l2 to gain immediate access to the whole cache line of l1
         outputToLastStage.write(index);
+        std::cout<<name<<" sended index: "<<index<< std::endl;
         addressToLastStage.write(wiredAddr);
         isWriteThrough.write(true);
         wait();
         requestToLastStage.write(false);
         isWriteThrough.write(false);
+        while(!readyFromLastStage.read()){ // wait until last stage is ready 
+            wait();
+        }
         //wait();
     }
     int loadFromL2(int addressToLoad){
@@ -418,6 +428,7 @@ SC_MODULE(CACHEL1){
         }
         std::cout<< std::endl;
         #endif
+        (void) index;
     }
     ~CACHEL1(){
         for(int i = 0; i< cacheLines; i++){
