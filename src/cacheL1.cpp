@@ -9,6 +9,8 @@
 #include "types.h"
 #include "cacheL2.cpp"
 
+#define L1_DETAIL
+
 SC_MODULE(CACHEL1){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -201,7 +203,7 @@ SC_MODULE(CACHEL1){
                 internal[index%cacheLines].bytes[offset+i] = inputData.read().range(31-i*8,31-(i+1)*8+1).to_uint();
             }
             printCacheLine(index%cacheLines);
-            writeThrough(index%cacheLines,address.read().to_uint());
+            
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             #ifdef L1_DETAIL
@@ -236,7 +238,8 @@ SC_MODULE(CACHEL1){
                 internal[index%cacheLines].bytes[j-i] = inputData.read().range(31-j*8,31-(j+1)*8+1).to_uint();
             }
             printCacheLine(index%cacheLines);
-            writeThrough(index%cacheLines,addressBV_high.to_uint());
+            //writeThrough(index%cacheLines,addressBV_high.to_uint());
+            writeThrough(index%cacheLines-1,address.read().to_uint());
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             ready.write(true);
@@ -362,6 +365,7 @@ SC_MODULE(CACHEL1){
         rwToLastStage.write(true);
         //by write Throught, we provide a index for l2 to gain immediate access to the whole cache line of l1
         outputToLastStage.write(index);
+        std::cout<<name<<" sended index: "<<index<< std::endl;
         addressToLastStage.write(wiredAddr);
         isWriteThrough.write(true);
         wait();
@@ -418,6 +422,11 @@ SC_MODULE(CACHEL1){
         }
         std::cout<< std::endl;
         #endif
+        std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
+        for(int i = 0; i< cacheLineSize;i++){
+            std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
+        }
+        std::cout<< std::endl;
     }
     ~CACHEL1(){
         for(int i = 0; i< cacheLines; i++){
