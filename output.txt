@@ -1423,3 +1423,543 @@ misses: 125
 hits: 142
 gates: 0
 
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 3684
+misses: 252
+hits: 104
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 66
+misses: 4
+hits: 4
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 1786
+misses: 132
+hits: 37
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 322
+misses: 24
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 86
+misses: 5
+hits: 5
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 6192
+misses: 458
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 3684
+misses: 252
+hits: 104
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 66
+misses: 4
+hits: 4
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 1786
+misses: 132
+hits: 37
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 28915
+misses: 2167
+hits: 70
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 322
+misses: 24
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 32099
+misses: 2398
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 86
+misses: 5
+hits: 5
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 2
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 62
+misses: 3
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 6675
+misses: 456
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 4127
+misses: 248
+hits: 108
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 77
+misses: 4
+hits: 4
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 1475
+misses: 98
+hits: 71
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 29002
+misses: 2039
+hits: 198
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 328
+misses: 23
+hits: 1
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 34126
+misses: 2398
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 101
+misses: 5
+hits: 5
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 2
+L2 Cache Lines: 4
+Cache Line Size: 8
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 62
+misses: 3
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 5681
+misses: 526
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 4759
+misses: 460
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 75
+misses: 5
+hits: 4
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 1720
+misses: 134
+hits: 91
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 24956
+misses: 2351
+hits: 223
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 292
+misses: 28
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 28696
+misses: 2761
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 92
+misses: 6
+hits: 5
+gates: 0
+
+Simulation Inputs:
+Cycles: 1000000
+L1 Cache Lines: 4
+L2 Cache Lines: 8
+Cache Line Size: 4
+L1 Cache Latency: 3
+L2 Cache Latency: 5
+Memory Latency: 7
+
+Simulation Result:
+cycles: 48
+misses: 3
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 10000000
+L1 Cache Lines: 32
+L2 Cache Lines: 128
+Cache Line Size: 64
+L1 Cache Latency: 4
+L2 Cache Latency: 16
+Memory Latency: 400
+
+Simulation Result:
+cycles: 13644
+misses: 3
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 10000000
+L1 Cache Lines: 32
+L2 Cache Lines: 128
+Cache Line Size: 64
+L1 Cache Latency: 4
+L2 Cache Latency: 16
+Memory Latency: 400
+
+Simulation Result:
+cycles: 13238
+misses: 3
+hits: 0
+gates: 0
+
+Simulation Inputs:
+Cycles: 10000000
+L1 Cache Lines: 32
+L2 Cache Lines: 128
+Cache Line Size: 64
+L1 Cache Latency: 4
+L2 Cache Latency: 16
+Memory Latency: 400
+
+Simulation Result:
+cycles: 13644
+misses: 3
+hits: 2
+gates: 0
+
+Simulation Inputs:
+Cycles: 10000000
+L1 Cache Lines: 32
+L2 Cache Lines: 128
+Cache Line Size: 64
+L1 Cache Latency: 4
+L2 Cache Latency: 16
+Memory Latency: 400
+
+Simulation Result:
+cycles: 13644
+misses: 3
+hits: 2
+gates: 0
+

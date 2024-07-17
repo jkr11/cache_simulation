@@ -9,7 +9,7 @@
 #include "types.h"
 #include "cacheL2.cpp"
 
-#define L1_DETAIL
+//#define L1_DETAIL
 
 SC_MODULE(CACHEL1){
     int latency;
@@ -90,7 +90,7 @@ SC_MODULE(CACHEL1){
             if(requestIncoming.read()){ // upon request shall the component start to work    
                 std::cout<<name<<" received request at time: "<<sc_time_stamp()<<std::endl;
                 ready.write(false); 
-                wait(latency*2,SC_NS);
+                
                 /*
                 while(waitingForLatency<latency){ // latency counter
                     ready.write(false); 
@@ -103,8 +103,9 @@ SC_MODULE(CACHEL1){
                     #ifdef L1_DETAIL
                     std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<<inputData.read().to_int()<< std::endl;
                     #endif
-                    write();
+                    write(); // by writeThrough we only expect a latency of Memory, therefore the latency of write() is considered later
                 }else{
+                    wait(latency*2,SC_NS); 
                     #ifdef L1_DETAIL
                     std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
                     #endif
@@ -149,6 +150,7 @@ SC_MODULE(CACHEL1){
                 #endif
                 miss++;
                 hit = false;
+                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -186,6 +188,7 @@ SC_MODULE(CACHEL1){
                 std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
                 #endif
                 hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
+                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -203,7 +206,7 @@ SC_MODULE(CACHEL1){
                 internal[index%cacheLines].bytes[offset+i] = inputData.read().range(31-i*8,31-(i+1)*8+1).to_uint();
             }
             printCacheLine(index%cacheLines);
-            
+            int oldIndex = index;
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             #ifdef L1_DETAIL
@@ -239,7 +242,7 @@ SC_MODULE(CACHEL1){
             }
             printCacheLine(index%cacheLines);
             //writeThrough(index%cacheLines,addressBV_high.to_uint());
-            writeThrough(index%cacheLines-1,address.read().to_uint());
+            writeThrough(oldIndex,address.read().to_uint());
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             ready.write(true);
@@ -371,6 +374,9 @@ SC_MODULE(CACHEL1){
         wait();
         requestToLastStage.write(false);
         isWriteThrough.write(false);
+        while(!readyFromLastStage.read()){ // wait until last stage is ready 
+            wait();
+        }
         //wait();
     }
     int loadFromL2(int addressToLoad){
@@ -422,11 +428,7 @@ SC_MODULE(CACHEL1){
         }
         std::cout<< std::endl;
         #endif
-        std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
-        for(int i = 0; i< cacheLineSize;i++){
-            std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
-        }
-        std::cout<< std::endl;
+        (void) index;
     }
     ~CACHEL1(){
         for(int i = 0; i< cacheLines; i++){

@@ -9,7 +9,7 @@
 #include "types.h"
 #include "cacheL1.cpp"
 
-#define L2_DETAIL
+//#define L2_DETAIL
 SC_MODULE(CACHEL2){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -91,7 +91,7 @@ SC_MODULE(CACHEL2){
             std::cout<<name<<" received request: "<< requestIncoming.read()<<"at time: "<<sc_time_stamp()<<std::endl;
             isWriteT = isWriteThrough.read(); 
             ready.write(false); 
-            wait(latency*2,SC_NS);
+            
                 /*
                 while(waitingForLatency<latency){ // latency counter
                     ready.write(false); 
@@ -110,8 +110,9 @@ SC_MODULE(CACHEL2){
                 std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<< std::hex << std::setw(8) << std::setfill('0')<<receivedData<< std::endl;
                 #endif
                 */
-                write();
+                write();// by writeThrough we only expect a latency of Memory, therefore the latency of write() is omitted
             }else{
+                wait(latency*2,SC_NS); 
                 #ifdef L2_DETAIL
                 std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
                 #endif
@@ -246,12 +247,13 @@ SC_MODULE(CACHEL2){
         std::cout<<name<<" write Through data wired "<< std::hex << std::setw(2) << std::setfill('0')<<data_tmp.to_int() << std::endl;
         std::cout<<name<<" write Through data wired in binary "<<data_tmp.to_string() << std::endl;
         #endif
-        std::cout<<name<<" write Through data wired "<< std::hex << std::setw(8) << std::setfill('0')<<data_tmp.to_int() << std::endl;
-        std::cout<<name<<" write Through data wired in binary "<<data_tmp.to_string() << std::endl;
         addressToLastStage.write(addressToMem);
         wait();
         //std::cout<<name<<" current 220 at time:"<<sc_time_stamp()<<std::endl;
         requestToLastStage.write(false);
+        while(!readyFromLastStage.read()){ // wait until last stage is ready with write
+            wait();
+        }
         //wait(); // wait for the ready from mem to change
         //std::cout<<name<<" current 223 at time:"<<sc_time_stamp()<<std::endl;
         std::cout<<name<<" finished write Through data at time:"<<sc_time_stamp()<<std::endl;
@@ -264,11 +266,7 @@ SC_MODULE(CACHEL2){
         }
         std::cout<< std::endl;
         #endif
-        std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
-        for(int i = 0; i< cacheLineSize;i++){
-            std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
-        }
-        std::cout<< std::endl;
+        (void) index;
     }
     int loadFromMem(){
         sc_bv<32> addressToMem; 
