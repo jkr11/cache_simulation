@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+void print_aux(const Request *req);
+
 void print_request(const Request *req);
 
 void print_result(const Result *res);
