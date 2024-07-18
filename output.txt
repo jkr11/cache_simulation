@@ -1964,32 +1964,3 @@ hits: 2
 gates: 0
 
 Simulation Inputs:
-Cycles: 100000
-L1 Cache Lines: 32
-L2 Cache Lines: 128
-Cache Line Size: 64
-L1 Cache Latency: 4
-L2 Cache Latency: 16
-Memory Latency: 400
-
-Simulation Result:
-cycles: 27703
-misses: 8
-hits: 6
-gates: 0
-
-Simulation Inputs:
-Cycles: 100000
-L1 Cache Lines: 32
-L2 Cache Lines: 128
-Cache Line Size: 64
-L1 Cache Latency: 4
-L2 Cache Latency: 16
-Memory Latency: 400
-
-Simulation Result:
-cycles: 27703
-misses: 8
-hits: 6
-gates: 0
-

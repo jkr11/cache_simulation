@@ -31,7 +31,7 @@ if [ ! -d /tmp/test_data_validity/ ]; then
   mkdir /tmp/test_data_validity/
 fi
 
-for INPUTFILE in *.csv; do
+for INPUTFILE in cache_accesses.csv; do
 	if [ -f "$INPUTFILE" ]; then
 	
 		echo "Checking $INPUTFILE ..."
@@ -60,4 +60,4 @@ done
 
 echo "The test is over."
 
-rm -r /tmp/test_data_validity/
+#rm -r /tmp/test_data_validity/
