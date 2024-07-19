@@ -106,7 +106,7 @@ SC_MODULE(CACHEL1){
                     std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<<inputData.read().to_int()<< std::endl;
                     write(); // by writeThrough we only expect a latency of Memory, therefore the latency of write() is considered later
                 }else{
-                    wait(latency*2,SC_NS); 
+                    
                     std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
                     read();
                 }
@@ -153,7 +153,7 @@ SC_MODULE(CACHEL1){
                 #endif
                 miss++;
                 hit = false;
-                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
+                //wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -174,6 +174,10 @@ SC_MODULE(CACHEL1){
             writeThrough(index%cacheLines,address.read().to_uint(),hit);
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
+            wait(latency*2,SC_NS); 
+            //while(!readyFromLastStage.read()){ // wait until last stage is ready 
+            //    wait();
+            //}            
             ready.write(true);
             #ifdef L1_DETAIL
             std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
@@ -191,7 +195,7 @@ SC_MODULE(CACHEL1){
                 std::cout<<name<<" miss by writing first line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
                 #endif
                 hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
-                wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
+                //wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
             }
             if(hit){
@@ -251,6 +255,11 @@ SC_MODULE(CACHEL1){
             writeThrough(oldIndex,address.read().to_uint(),hit);
             //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
+            wait(latency*2,SC_NS); 
+            wait(latency*2,SC_NS); 
+            //while(!readyFromLastStage.read()){ // wait until last stage is ready 
+            //    wait();
+            //}
             ready.write(true);
             #ifdef L1_DETAIL
             std::cout<<name<<" finished with loading the second line from l2 with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
@@ -266,6 +275,7 @@ SC_MODULE(CACHEL1){
         int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
 
         if(offset_tmp < cacheLineSize-3){ // the read data can be accessed in one cache line
+            wait(latency*2,SC_NS); 
             int t_tmp = address.read().range(31,tagOffset).to_uint();
             int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
             index = ifExist(t_tmp,i_tmp);
@@ -299,6 +309,7 @@ SC_MODULE(CACHEL1){
             int t_tmp = addressBV_low.range(31,tagOffset).to_uint();
             int i_tmp = addressBV_low.range(tagOffset-1,indexOffset).to_uint();
             index = ifExist(t_tmp,i_tmp);
+            wait(latency*2,SC_NS); 
             if(index==-1){ // in the cache there are no such information
                 #ifdef HIT_LOG
                 std::cout<<name<<" miss by reading first line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
@@ -329,6 +340,7 @@ SC_MODULE(CACHEL1){
             t_tmp = addressBV_high.range(31,tagOffset).to_uint();
             i_tmp = addressBV_high.range(tagOffset-1,indexOffset).to_uint();
             index = ifExist(t_tmp,i_tmp);
+            wait(latency*2,SC_NS); 
             if(index==-1){ // in the cache there are no such information
                 #ifdef HIT_LOG
                 std::cout<<name<<" miss by reading secode line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_int()<< " detected, sending signal to next level"<< std::endl;
@@ -386,9 +398,7 @@ SC_MODULE(CACHEL1){
         wait();
         requestToLastStage.write(false);
         isWriteThrough.write(false);
-        while(!readyFromLastStage.read()){ // wait until last stage is ready 
-            wait();
-        }
+
         //wait();
     }
     int loadFromL2(int addressToLoad){
@@ -415,7 +425,7 @@ SC_MODULE(CACHEL1){
         #ifdef TIME_LOG
         std::cout<<name<<" with last stage ready for data preperation at time: "<<sc_time_stamp()<< std::endl;
         #endif
-        requestToLastStage.write(false);
+        //requestToLastStage.write(false);
         #ifdef L1_DETAIL
         std::cout<<name<<" received data index from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
         #endif
