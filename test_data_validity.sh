@@ -31,7 +31,7 @@ if [ ! -d /tmp/test_data_validity/ ]; then
   mkdir /tmp/test_data_validity/
 fi
 
-for INPUTFILE in cache_accesses.csv; do
+for INPUTFILE in *.csv; do
 	if [ -f "$INPUTFILE" ]; then
 	
 		echo "Checking $INPUTFILE ..."
@@ -47,6 +47,8 @@ for INPUTFILE in cache_accesses.csv; do
 
 		sed -i '/Result:/,$d' /tmp/test_data_validity/to_test.txt
 
+		sed -i '/Request:/d' /tmp/test_data_validity/direct_memory.txt
+
 		sed -i '/Result:/,$d' /tmp/test_data_validity/direct_memory.txt
 
 
@@ -60,4 +62,4 @@ done
 
 echo "The test is over."
 
-#rm -r /tmp/test_data_validity/
+rm -r /tmp/test_data_validity/
