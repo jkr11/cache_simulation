@@ -169,6 +169,7 @@ SC_MODULE(CACHEL2){
             // at this point, the required data is successfully loaded from last stage
             //calculate the offset and change the required data
             int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
+            
             if(offset_tmp < cacheLineSize-3){ // data lies within one line
                 #ifdef L2_DETAIL
                 std::cout<<name<<" with l1 index: "<<inputData.read().to_int() << std::endl;
@@ -189,6 +190,12 @@ SC_MODULE(CACHEL2){
                 }
             }
             writeThrough(index%cacheLines);
+            if(offset_tmp < cacheLineSize-3){
+                wait(latency*2,SC_NS); 
+            }else{
+                wait(latency*2,SC_NS); 
+                wait(latency*2,SC_NS); 
+            }
             //wait(); //wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
         	ready.write(true);
@@ -266,9 +273,9 @@ SC_MODULE(CACHEL2){
         wait();
         //std::cout<<name<<" current 220 at time:"<<sc_time_stamp()<<std::endl;
         requestToLastStage.write(false);
-        while(!readyFromLastStage.read()){ // wait until last stage is ready with write
-            wait();
-        }
+        //while(!readyFromLastStage.read()){ // wait until last stage is ready with write
+        //    wait();
+        //}
         //wait(); // wait for the ready from mem to change
         //std::cout<<name<<" current 223 at time:"<<sc_time_stamp()<<std::endl;
         #ifdef TIME_LOG
