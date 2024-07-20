@@ -8,11 +8,10 @@
 
 //#define MEMLOG
 //#define MEMLOG_TIME
-SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max address and maximal length of Data are 4 Bytes (uint32)
+SC_MODULE(MEMORY){
     int latency;
     sc_in<bool> clk;
 
-    int latencyWaited = 0; // the latency counter
     sc_in<bool> requestIncoming;
     sc_in<bool> rw;
     sc_in<sc_bv<32>> addr;
@@ -26,10 +25,13 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
     SC_CTOR(MEMORY);
     MEMORY(sc_module_name name,int latency): sc_module(name){ 
         this->latency = latency;
-        this->latencyWaited = 0;
         SC_THREAD(run);
         sensitive<<clk.pos()<<requestIncoming;
     }
+    /** 
+     * @brief this Method is the entry point of Memory, it listens to the clock and requestIncomming then perfroms the required function 
+     * the latency will be counted at the beginning of the request processing.
+    */
     void run(){
         while(true){
             wait();
@@ -38,12 +40,6 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
                 std::cout<<"memory request incomming From L2 at time: "<<sc_time_stamp()<<std::endl;
                 #endif
                 ready.write(false);
-                /*while (latencyWaited < latency){ // first count the latency then execute the funtionality
-                    //std::cout<<"memory waiting for latency"<<std::endl;
-                    latencyWaited++;
-                    ready.write(false);
-                    wait();
-                }*/
                 wait(2*latency,SC_NS);
                 
                 uint32_t address = addr.read().to_uint();
@@ -80,9 +76,7 @@ SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max ad
                 #ifdef MEMLOG_TIME
                 std::cout<<"memory finished current operation at time: "<<sc_time_stamp()<<std::endl;
                 #endif
-                //latencyWaited = 0;
             }else{
-                //std::cout<<"memory waiting for request"<<std::endl;
                 ready.write(true);
             }
         }
