@@ -270,6 +270,18 @@ int sc_main(int argc, char* argv[])
     print_requests(requests, numRequests); // print requests after execution with updated data from read
     print_result(&result);
 #endif
+#ifdef _OUT
+    FILE *file = fopen("results.csv", "a");
+    if (file == NULL) {
+        HANDLE_ERROR("Test file does not exist");
+    }
+
+    fprintf(file, "%zu,%zu,%zu,%zu\n", result.cycles, result.misses,
+          result.hits, result.primitiveGateCount);
+
+    fclose(file);
+#endif
+
     free(requests);
     exit(EXIT_SUCCESS);
 }
