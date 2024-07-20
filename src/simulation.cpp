@@ -135,7 +135,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         break;
       }
     }
-    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&(size_t)indexForInput<numRequests){ // if l1 is ready for operation
+    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&(size_t)indexForInput<numRequests){ // if all modules are ready for operation
       if(lastR){// store the read Data back to request
         requests[indexForInput-1].data = dataFromL1.read().to_int();
       }
@@ -153,7 +153,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
       }
       indexForInput++;
     }
-    clk.write(true);
+    clk.write(true); // clock running
     sc_start(1,SC_NS);
     requestToL1.write(false);
     clk.write(false);

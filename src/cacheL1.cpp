@@ -14,9 +14,8 @@
 //#define HIT_LOG
 SC_MODULE(CACHEL1){
     int latency;
-    int cacheLines; // this has also to be 2er Potenz
+    int cacheLines;
     
-    // here i took maximal cacheLineSize as 128 bit, which is also the largest range in the industry，so the max of this Size is 16 Byte
     int cacheLineSize; 
 
     int miss;
@@ -81,7 +80,9 @@ SC_MODULE(CACHEL1){
         SC_THREAD(run);
         sensitive<<clk.pos()<<requestIncoming<<readyFromLastStage;
     }
-    
+    /** 
+     * @brief this Method is the entry point of L1Cache, it listen to the clock and requestIncomming then calls the requested method(read or write) 
+    */
     void run(){
         while(true){
             wait();
@@ -111,8 +112,13 @@ SC_MODULE(CACHEL1){
             }
         }
     }
-
-    int ifExist(int tag,int index){ // this method checks if the given address exist in the cache, returns the corresponding array index, and -1 if not exist
+    /** 
+     * @brief this method checks if the given address exist in the cache or is empty, returns the corresponding array index, and -1 if not exist
+     * @param tag : the tag to be compared
+     * @param index : the index to be compared
+     * @return if the accessed date is valid in Cache, it will return its index. if not, -1
+    */
+    int ifExist(int tag,int index){ // 
         if(internal[index%cacheLines].empty == 1){
             return -1;
         }
@@ -121,7 +127,12 @@ SC_MODULE(CACHEL1){
             return index;
         return -1;
     }
-
+    /** 
+     * @brief this method is the main logic of the write function. 
+     * It firstly check if the accessed data lies within 1 line or 2 lines, then load the required data to internal Storage from L2
+     * After loaded or hits, it will perform a data Write and send Signal to L2, that all the modules can be writen. 
+     * The latency of L1 by writing will firstly be counted when its assured that all data are loaded in L1 internal Storage
+    */
     void write(){
         bool hit = true;
         int index = -1;
@@ -259,6 +270,12 @@ SC_MODULE(CACHEL1){
             #endif
         }
     }
+    /** 
+     * @brief this method is the main logic of the read function. 
+     * It firstly check if the accessed data lies within 1 line or 2 lines, then load the required data to internal Storage from L2
+     * After loaded or hits, it will perform a data Read from one or two lines and send Ready to outside, that the data required is ready. 
+     * The latency of L1 by reading will be counted whenever there is a request
+    */
     void read(){
         bool hit = true;
         int index = -1;
@@ -379,7 +396,9 @@ SC_MODULE(CACHEL1){
             #endif
         }
     }
-
+    /**
+     * @brief this method communicate with L2 to inform that the data is ready to be written in all modules.
+     */
     void writeThrough(int index,int addressToWrite,bool hit){ // hit here shows if we need a writeThrough
         sc_bv<32> wiredAddr = addressToWrite;
         while(!readyFromLastStage.read()){ // wait until l2 is ready
@@ -400,6 +419,10 @@ SC_MODULE(CACHEL1){
         requestToLastStage.write(false);
         isWriteThrough.write(false);
     }
+    /**
+     * this method load the required data from L2. It firstly send a requestToL2 signal with all necessary information,
+     * after L2 is ready, the data shall be loaded into L1 internal Storage
+     */
     int loadFromL2(int addressToLoad){
         while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
             wait();
@@ -443,6 +466,10 @@ SC_MODULE(CACHEL1){
         internal[index%cacheLines].empty = 0;
         return index;
     }
+    /**
+     * @brief this method discribes the internal storage of one line in the cache
+     * @param index the index of line that is wanted to be shown
+     */
     void printCacheLine(int index){
         std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
         for(int i = 0; i< cacheLineSize;i++){

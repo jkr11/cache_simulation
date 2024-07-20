@@ -14,9 +14,8 @@
 //#define TIME_LOG
 SC_MODULE(CACHEL2){
     int latency;
-    int cacheLines; // this has also to be 2er Potenz
+    int cacheLines;
     int L1cacheLines;
-    // here i took maximal cacheLineSize as 128 bit, which is also the largest range in the industry，so the max of this Size is 16 Byte
     int cacheLineSize; 
 
     int miss;
@@ -44,7 +43,7 @@ SC_MODULE(CACHEL2){
 
     // communication with last stage
     sc_in<bool> readyFromLastStage;
-    sc_in<sc_bv<32>> dataFromLastStage; // this will give the current index of the internal storage of l1
+    sc_in<sc_bv<32>> dataFromLastStage; // this will show the current index of the internal storage of l1
     sc_out<bool> requestToLastStage;
     sc_out<bool> rwToLastStage; 
     sc_out<sc_bv<32>> addressToLastStage;
@@ -82,7 +81,11 @@ SC_MODULE(CACHEL2){
         SC_THREAD(run);
         sensitive<<clk.pos()<<requestIncoming<<readyFromLastStage;
     }
-    // as required the cache is full associative and shall be replaced with LRU
+
+    /** 
+     * @brief this Method is the entry point of L2Cache, it listen to the clock and requestIncomming then calls the requested method(read or write) 
+     * the latency of read will be counted here, because all the read request forwarded to L2 are performed in 1 line
+    */
     void run(){
         while(true){
             wait();
@@ -130,7 +133,13 @@ SC_MODULE(CACHEL2){
         }
     }
 
-    int ifExist(int tag,int index){ // this method checks if the given address exist in the cache, returns the corresponding array index, and -1 if not exist
+    /** 
+     * @brief this method checks if the given address exist in the cache or is empty, returns the corresponding array index, and -1 if not exist
+     * @param tag : the tag to be compared
+     * @param index : the index to be compared
+     * @return if the accessed date is valid in Cache, it will return its index. if not, -1
+    */
+    int ifExist(int tag,int index){
         if(internal[index%cacheLines].empty == 1){
             return -1;
         }
@@ -140,6 +149,14 @@ SC_MODULE(CACHEL2){
         return -1;
     }
 
+    /** 
+     * @brief this method is the main logic of the write function. 
+     * In Theory, L2 will only get a write request from L1 when its a WriteThrough, which means, if L1 is ready to write, so is L2.
+     * Therefore there is no need ever to load from Memory
+     * It firstly check if the accessed data lies within 1 line or 2 lines, then Write the required data to internal Storage
+     * After recevied the the request signal,it will send Signal to Memory, that all the modules can be writen. It will then perform a data Write
+     * The latency of L1 by writing will be counted according to whether its a one-line-access or two-line-access
+    */
     void write(){ // this only happens at write-Through
         bool hit = true;
         int index = -1;
@@ -196,6 +213,12 @@ SC_MODULE(CACHEL2){
             std::cout<<name<<" finished with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
             #endif
     }
+
+    /** 
+     * @brief this method is the main logic of the read function. 
+     * It checks if the requested date lies within its internal Storage, if not load the required data to internal Storage from Memory
+     * After loaded or hits, it will send Ready and the corresponding data to L1. 
+    */
     void read(){
         bool hit = true;
         int index = -1;
@@ -223,6 +246,9 @@ SC_MODULE(CACHEL2){
         #endif
     }
 
+    /**
+     * @brief this method communicate with Memory to inform that the data is ready to be written in all modules.
+     */
     void writeThrough(int index){
         int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
         sc_bv<32> addressToMem = address.read();
@@ -269,6 +295,11 @@ SC_MODULE(CACHEL2){
         std::cout<<name<<" finished write Through data at time:"<<sc_time_stamp()<<std::endl;
         #endif
     }
+    
+     /**
+     * @brief this method discribes the internal storage of one line in the cache
+     * @param index the index of line that is wanted to be shown
+     */
     void printCacheLine(int index){
         
         std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
@@ -278,6 +309,10 @@ SC_MODULE(CACHEL2){
         std::cout<< std::endl;
         
     }
+    /**
+     * This method load the required data from Memory. 
+     * The requests are done by a 4-Byte-step from the beginning address of the required line to the last 4 Byte of this line, for the Databus is 4 Byte long.
+     */    
     int loadFromMem(){
         sc_bv<32> addressToMem; 
         int index = address.read().range(tagOffset-1,indexOffset).to_uint();;
