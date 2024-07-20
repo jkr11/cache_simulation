@@ -94,7 +94,7 @@ void print_result_to_file(FILE* file, const Result* result)
 
 #endif
 
-int sc_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     if (argc == 1)
     {

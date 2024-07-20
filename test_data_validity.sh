@@ -35,7 +35,7 @@ if [ ! -d /tmp/test_data_validity/ ]; then
 fi
 
 
-for INPUTFILE in *.csv; do
+for INPUTFILE in ./examples/*.csv; do
 	if [ -f "$INPUTFILE" ]; then
 	
 		echo "Checking $INPUTFILE ..."

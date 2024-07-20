@@ -11,7 +11,7 @@
 
 //#define L1_DETAIL
 //#define TIME_LOG
-#define HIT_LOG
+//#define HIT_LOG
 SC_MODULE(CACHEL1){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -30,8 +30,6 @@ SC_MODULE(CACHEL1){
 
     int tagbits; // the length of tagbits
 
-
-    int waitingForLatency = 0; // the latency counter
     
     CacheLine* l2; // the internal storage of l2, for a faster communication with l2
 
@@ -64,7 +62,6 @@ SC_MODULE(CACHEL1){
         this->latency = latency;
         this->cacheLines = cacheLines;
         this->cacheLineSize = cacheLineSize;
-        waitingForLatency = 0;
         hits = 0;
         miss = 0;
         offsetLength = (int)(log(cacheLineSize)/log(2));
@@ -94,20 +91,15 @@ SC_MODULE(CACHEL1){
                 #endif
                 ready.write(false); 
                 
-                /*
-                while(waitingForLatency<latency){ // latency counter
-                    ready.write(false); 
-                    wait();
-                    //std::cout<<name<<" waiting for latency"<< std::endl;
-                    waitingForLatency++;
-                }     
-                */
                 if(rw.read()){ // write enable
+                    #ifdef L1_DETAIL
                     std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<<inputData.read().to_int()<< std::endl;
-                    write(); // by writeThrough we only expect a latency of Memory, therefore the latency of write() is considered later
+                    #endif
+                    write();
                 }else{
-                    
+                    #ifdef L1_DETAIL
                     std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
+                    #endif
                     read();
                 }
                 #ifdef TIME_LOG
@@ -117,7 +109,6 @@ SC_MODULE(CACHEL1){
                 //std::cout<<name<<" waiting for request"<< std::endl;
                 ready.write(true);
             }
-            waitingForLatency = 0;
         }
     }
 
@@ -200,11 +191,6 @@ SC_MODULE(CACHEL1){
             }else{
                 std::cout<<name<<" hit by writing first line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
             }
-            if(hit){
-                #ifdef L1_DETAIL
-                std::cout<<name<<" hit with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
-                #endif
-            }
 
             // at this point, the required data is successfully loaded from last stage
             //calculate the offset and change the required data
@@ -214,13 +200,15 @@ SC_MODULE(CACHEL1){
             for(i = 0; i+offset < cacheLineSize; i++){
                 internal[index%cacheLines].bytes[offset+i] = inputData.read().range(31-i*8,31-(i+1)*8+1).to_uint();
             }
+            #ifdef L1_DETAIL
             printCacheLine(index%cacheLines);
+            #endif
             int oldIndex = index;
-            //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             #ifdef L1_DETAIL
             std::cout<<name<<" finished with loading the first line from l2 with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
             #endif
+
             // second deal with the second cacheLine
             t_tmp = addressBV_high.range(31,tagOffset).to_uint();
             i_tmp = addressBV_high.range(tagOffset-1,indexOffset).to_uint();
@@ -233,7 +221,9 @@ SC_MODULE(CACHEL1){
                 index = loadFromL2(addressBV_high.to_uint());
             }
             else{
+                #ifdef HIT_LOG
                 std::cout<<name<<" hit by writing second line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_int()<< " detected, sending signal to next level"<< std::endl;
+                #endif
             }
             if(hit){
                 hits++;
@@ -255,16 +245,14 @@ SC_MODULE(CACHEL1){
             for(int j = i; j < 4; j++){
                 internal[index%cacheLines].bytes[j-i] = inputData.read().range(31-j*8,31-(j+1)*8+1).to_uint();
             }
+            #ifdef L1_DETAIL
             printCacheLine(index%cacheLines);
-            //writeThrough(index%cacheLines,addressBV_high.to_uint());
+            #endif
+            
             writeThrough(oldIndex,address.read().to_uint(),hit);
-            //wait(); // wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
             wait(latency*2,SC_NS); 
             wait(latency*2,SC_NS); 
-            //while(!readyFromLastStage.read()){ // wait until last stage is ready 
-            //    wait();
-            //}
             ready.write(true);
             #ifdef L1_DETAIL
             std::cout<<name<<" finished with loading the second line from l2 with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int() << std::endl;
@@ -300,7 +288,6 @@ SC_MODULE(CACHEL1){
             }
 
             int offset = address.read().range(indexOffset-1,0).to_uint();
-            //offset = offset & 0xfffffffc; alignment is no longer needed
             sc_bv<32> output_tmp;
             for(int i = 0; i< 4; i++){
                 output_tmp.range(31-i*8,31-(i+1)*8+1) = internal[index%cacheLines].bytes[offset+i];
@@ -334,7 +321,9 @@ SC_MODULE(CACHEL1){
             sc_bv<32> output_tmp;
             int offset = address.read().range(indexOffset-1,0).to_uint();
             int i = 0; // i for recording the number of the read bytes
+            #ifdef L1_DETAIL
             printCacheLine(index%cacheLines);
+            #endif
             for(i = 0; offset + i< cacheLineSize; i++){
                 output_tmp.range(31-i*8,31-(i+1)*8+1) = internal[index%cacheLines].bytes[offset+i];
                 #ifdef L1_DETAIL
@@ -353,6 +342,11 @@ SC_MODULE(CACHEL1){
                 hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
                 index = loadFromL2(addressBV_high.to_uint());
             }
+            else{
+                #ifdef HIT_LOG
+                std::cout<<name<<" hit by reading secode line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_int()<< " detected, sending signal to next level"<< std::endl;
+                #endif
+            }
             if(hit){
                 hits++;
                 #ifdef HIT_LOG
@@ -368,7 +362,9 @@ SC_MODULE(CACHEL1){
             // at this point, the required data is successfully loaded from last stage
             //calculate the offset and change the required data
             // read data from the second line
+            #ifdef L1_DETAIL
             printCacheLine(index%cacheLines);
+            #endif
             for(int j = i; j< 4; j++){
                 output_tmp.range(31-j*8,31-(j+1)*8+1) = internal[index%cacheLines].bytes[j - i]; // read from the beginning of the second line
                 #ifdef L1_DETAIL
@@ -384,7 +380,7 @@ SC_MODULE(CACHEL1){
         }
     }
 
-    void writeThrough(int index,int addressToWrite,bool hit){
+    void writeThrough(int index,int addressToWrite,bool hit){ // hit here shows if we need a writeThrough
         sc_bv<32> wiredAddr = addressToWrite;
         while(!readyFromLastStage.read()){ // wait until l2 is ready
             wait();
@@ -403,8 +399,6 @@ SC_MODULE(CACHEL1){
         wait();
         requestToLastStage.write(false);
         isWriteThrough.write(false);
-
-        //wait();
     }
     int loadFromL2(int addressToLoad){
         while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
@@ -421,7 +415,6 @@ SC_MODULE(CACHEL1){
         std::cout<<name<<" sended addr: "<< std::hex << std::setw(8) << std::setfill('0')<< address.read().to_int()<< std::endl;
         #endif
         wait();
-        //std::cout<<name<<" readiness from L2: "<<readyFromLastStage.read()<< std::endl;
         requestToLastStage.write(false);
         wait(); // wait for the ready signal to change
         while(!readyFromLastStage.read()){ // keep on waitin until last Stage is ready
@@ -430,7 +423,6 @@ SC_MODULE(CACHEL1){
         #ifdef TIME_LOG
         std::cout<<name<<" with last stage ready for data preperation at time: "<<sc_time_stamp()<< std::endl;
         #endif
-        //requestToLastStage.write(false);
         #ifdef L1_DETAIL
         std::cout<<name<<" received data index from last stage: "<< std::hex << std::setw(8) << std::setfill('0')<< dataFromLastStage.read().to_int()<< std::endl;
         #endif
@@ -452,14 +444,11 @@ SC_MODULE(CACHEL1){
         return index;
     }
     void printCacheLine(int index){
-        #ifdef L1_DETAIL
         std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
         for(int i = 0; i< cacheLineSize;i++){
             std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
         }
         std::cout<< std::endl;
-        #endif
-        (void) index;
     }
     ~CACHEL1(){
         for(int i = 0; i< cacheLines; i++){
