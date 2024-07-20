@@ -77,7 +77,9 @@ Das Projekt verifiziert die erwartete Reduktion der Zugriffszeiten.
 ## Beitrag
 
 ### Xuanqi Meng
-Entwicklung von einer Version von 3 Module und die Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. Debuggen und Logikoptimierung. Entwurf von Schaltung der entsprechenden Programmlogik.
+Entwicklung von einer Version von 3 Module und die Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
+Teilweise Debuggen und Logikoptimierung. 
+Entwurf von Schaltung der entsprechenden Programmlogik.
 ### Jeremias Rieser 
 
 ### Artem Bilovol
