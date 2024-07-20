@@ -62,37 +62,7 @@ int is_valid_csv(const char* filename)
     return ext && strcmp("csv", ext + 1) == 0;
 }
 
-
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
-
-#ifdef _OUT
-void print_inputs(FILE* file, int cycles, unsigned l1CacheLines,
-                  unsigned l2CacheLines, unsigned cacheLineSize,
-                  unsigned l1CacheLatency, unsigned l2CacheLatency,
-                  unsigned memoryLatency)
-{
-    fprintf(file, "Simulation Inputs:\n");
-    fprintf(file, "Cycles: %d\n", cycles);
-    fprintf(file, "L1 Cache Lines: %u\n", l1CacheLines);
-    fprintf(file, "L2 Cache Lines: %u\n", l2CacheLines);
-    fprintf(file, "Cache Line Size: %u\n", cacheLineSize);
-    fprintf(file, "L1 Cache Latency: %u\n", l1CacheLatency);
-    fprintf(file, "L2 Cache Latency: %u\n", l2CacheLatency);
-    fprintf(file, "Memory Latency: %u\n", memoryLatency);
-    fprintf(file, "\n");
-}
-
-void print_result_to_file(FILE* file, const Result* result)
-{
-    fprintf(file, "Simulation Result:\n");
-    fprintf(file, "cycles: %ld\n", result->cycles);
-    fprintf(file, "misses: %ld\n", result->misses);
-    fprintf(file, "hits: %ld\n", result->hits);
-    fprintf(file, "gates: %ld\n", result->primitiveGateCount);
-    fprintf(file, "\n");
-}
-
-#endif
 
 int sc_main(int argc, char* argv[])
 {
@@ -299,20 +269,6 @@ int sc_main(int argc, char* argv[])
 #ifdef _DEBUG
     print_requests(requests, numRequests); // print requests after execution with updated data from read
     print_result(&result);
-#endif
-
-#ifdef _OUT
-    FILE* output_file = fopen("output.txt", "a");
-    if (!output_file)
-    {
-        HANDLE_ERROR("Could not open file for writing");
-    }
-
-    print_inputs(output_file, cycles, l1CacheLines, l2CacheLines, cacheLineSize,
-                 l1CacheLatency, l2CacheLatency, memoryLatency);
-
-    print_result_to_file(output_file, &result);
-    fclose(output_file);
 #endif
     free(requests);
     exit(EXIT_SUCCESS);
