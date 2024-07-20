@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 //#define MEMLOG
-#define MEMLOG_TIME
+//#define MEMLOG_TIME
 SC_MODULE(MEMORY){ // due to the defination of Request, I assume that the max address and maximal length of Data are 4 Bytes (uint32)
     int latency;
     sc_in<bool> clk;

@@ -10,8 +10,8 @@
 #include "cacheL2.cpp"
 
 //#define L1_DETAIL
-#define TIME_LOG
-//#define HIT_LOG
+//#define TIME_LOG
+#define HIT_LOG
 SC_MODULE(CACHEL1){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
@@ -197,6 +197,8 @@ SC_MODULE(CACHEL1){
                 hit = false; // if the first accessed cache line is missed, then shall this eventually be a miss
                 //wait(latency*2,SC_NS); // by read data are processed progressively ,therefore the latency must count
                 index = loadFromL2(address.read().to_uint());
+            }else{
+                std::cout<<name<<" hit by writing first line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
             }
             if(hit){
                 #ifdef L1_DETAIL
@@ -229,6 +231,9 @@ SC_MODULE(CACHEL1){
                 #endif
                 hit = false; 
                 index = loadFromL2(addressBV_high.to_uint());
+            }
+            else{
+                std::cout<<name<<" hit by writing second line with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<addressBV_high.to_int()<< " detected, sending signal to next level"<< std::endl;
             }
             if(hit){
                 hits++;
