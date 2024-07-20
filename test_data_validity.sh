@@ -34,6 +34,7 @@ if [ ! -d /tmp/test_data_validity/ ]; then
   mkdir /tmp/test_data_validity/
 fi
 
+
 for INPUTFILE in ./examples/*.csv; do
 	if [ -f "$INPUTFILE" ]; then
 	
@@ -49,6 +50,8 @@ for INPUTFILE in ./examples/*.csv; do
 		sed -i '0,/Info: \/OSCI\/SystemC: Simulation stopped by user\./d' /tmp/test_data_validity/direct_memory.txt
 
 		sed -i '/Result:/,$d' /tmp/test_data_validity/to_test.txt
+
+		sed -i '/Request:/d' /tmp/test_data_validity/direct_memory.txt
 
 		sed -i '/Result:/,$d' /tmp/test_data_validity/direct_memory.txt
 
@@ -81,4 +84,6 @@ done
 
 echo "The test is over."
 
+
 rm -r /tmp/test_data_validity/
+

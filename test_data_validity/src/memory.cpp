@@ -5,7 +5,7 @@
 #include <systemc>
 #include <systemc.h>
 #include <unordered_map>
-
+//#define DETAILS
 SC_MODULE(MEMORY)
 {
     // due to the defination of Request, I assume that the max address and maximal length of Data are 4 Bytes (uint32)
@@ -49,18 +49,24 @@ SC_MODULE(MEMORY)
                     wait();
                 }*/
                 wait(2 * latency, SC_NS);
+                #ifdef DETAILS
                 std::cout << "memory request incomming From L2" << std::endl;
+                #endif
                 uint32_t address = addr.read().to_uint();
                 if (rw.read())
                 {
                     // true for write
+                    #ifdef DETAILS
                     std::cout << "memory recieved data in binary: " << rData.read().to_string() << std::endl;
+                    #endif
                     for (int i = 0; i < 4; i++)
                     {
                         internal[address - i] = rData.read().range((i + 1) * 8 - 1, i * 8).to_uint();
+                        #ifdef DETAILS
                         std::cout << "written into address: " << address + i << " with data: " << std::hex <<
                             std::setw(1) << std::setfill('0') << rData.read().range((i + 1) * 8 - 1, i * 8).to_uint() <<
                             std::endl;
+                        #endif
                     }
                 }
                 else
@@ -72,19 +78,25 @@ SC_MODULE(MEMORY)
                         if (internal.find(address - i) == internal.end())
                         {
                             data.range((i + 1) * 8 - 1, i * 8) = 0x00;
+                            #ifdef DETAILS
                             std::cout << "read from address: " << address - i << " with data: 0x00" << std::endl;
+                            #endif
                         }
                         else
                         {
                             data.range((i + 1) * 8 - 1, i * 8) = internal[address - i];
+                            #ifdef DETAILS
                             std::cout << "read from address: " << address + i << " with data: " << std::hex <<
                                 std::setw(2) << std::setfill('0') << (int)internal[address - i] << std::endl;
+                                #endif
                         }
                     }
                     wData.write(data);
                 }
                 ready.write(true);
+                #ifdef DETAILS
                 std::cout << "memory finished current operation" << std::endl;
+                #endif
                 latencyWaited = 0;
             }
             else

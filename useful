@@ -1,0 +1,13 @@
+./project --l1-latency 3 --l2-latency 5 --memory-latency 7 --l1-lines 2 --l2-lines 2 e.csv
+./project --l1-latency 5 --l2-latency 10 --memory-latency 20 --l1-lines 1 --l2-lines 1 e.csv
+--cacheline-size 8 --l1-lines 1 --l2-lines 2 a.csv
+
+
+one optimierung: 
+    writing back even with 0 will initialize the unordered_map of memory,
+    so if the written value is 0, we skip(avoid initialization with 0) and it will not take spaces
+
+    the for loop waiting for latency can be simplified as "wait(time)"
+
+
+    一级缓存处理不对齐问题

@@ -163,13 +163,82 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   if(tracefile!=NULL){
     sc_close_vcd_trace_file(wf);
   }
+  /* Gatter Calculation:
+    L1:
+      Speicherung: (Tagbits + valid + CachelineSize)*Cachlines
+
+      Tag Comparator: : TagLength + TagLength -1 (XOR und OR) + 1 (AND)
+
+      CachelineSize*8-bit-2-to-1 MUX : CachelineSize*8 * 4 
+      
+      Control Unit:
+      2-to-1 MUX f ̈ur Tag: TagLength * 4
+      2-to-1 Mux f ̈ur Index: IndexLength * 4
+
+      FSM:
+        Zustandspeicherung: log2(13) = 4 (bits) D-Flip-Flop, Gatter = 4 * 5 = 20
+        Zustand ̈ubergang: (5 Eingabe + 4 bits) * 4 bits = 36
+        Ausgabe: 4 bits * 7 Ausgabe = 28
+
+      Address Calculator:
+        32-bit Adder : (2 And + 1 Or + 2 XOR) * 32 = 160
+        offset Adder : (2 And + 1 Or + 2 XOR) * offsetLength
+        32-bit-2-to-1 MUX: 32 * 4 = 128
+      Data Calculator:
+        Speicherung: (2*CachelineSize*8) D-Latch(jeweils 5 Gatter)
+        1-to-2 Decoder: 1 Not
+        2 * 1-bit-2-to-1 MUX: 2 * 4
+        CachelineSize-bit-2-to-1 MUX: CachelineSize*4
+        CachelineSize * 32-bit-2-to-1 MUX : CachelineSize*32*4
+        CachelineSize * 32-bit-2-to-1 DEMUX : CachelineSize*32*3
+    L2:
+      Speicherung: (Tagbits + valid + CachelineSize)*Cachlines
+
+      Tag Comparator: : TagLength + TagLength -1 (XOR und OR) + 1 (AND)
+
+      Control Unit:
+        2-to-1 MUX f ̈ur Tag: TagLength * 4
+        2-to-1 MUX f ̈ur Index: IndexLength * 4
+        2-to-1 MUX f ̈ur Offset : OffsetLength * 4
+      FSM:
+        Zustandspeicherung: log2(8) = 3 (bits) D-Flip-Flop, Gatter = 3 * 5 = 15
+        Zustand ̈ubergang: (6 Eingabe + 3 bits) * 3 bits = 27
+        Ausgabe: 3 bits * 7 Ausgabe = 21
+      Address Counter:
+        32-bit-2-to-1 MUX : 32 * 4 = 128
+        32-bit D-Flip-Flop = 32 * 5 = 160
+        32-bit Adder = 160
+        32-bit Comparator = 32 XOR + 31 OR = 63
+        1 Inverter = 1
+      Address Calculator:
+        gleich wie bei L1
+      Data Calculator:
+        Speicherung: (2*CachelineSize*8) D-Latch(jeweils 5 Gatter)
+        1-to-2 Decoder: 1 Not
+        2 * 1-bit-2-to-1 MUX: 2 * 4
+        CachelineSize-bit-2-to-1 MUX: CachelineSize*4
+        CachelineSize * 32-bit-2-to-1 MUX : CachelineSize*32*4
+        Kein Demux n ̈otig, da wir kein 32-bit Daten auslesen sollen
 
 
+
+  
+  */
+  int GatterCount = 0;
+  int offsetLength = (int)(log(cacheLineSize)/log(2));
+  int L1indexLength = (int)(log(l1CacheLines)/log(2));
+  int L1tagbits = 32 - offsetLength-L1indexLength;
+  int L2indexLength = (int)(log(l2CacheLines)/log(2));
+  int L2tagbits = 32 - offsetLength-L2indexLength;
+  GatterCount += (L1tagbits+1+cacheLineSize*8)*l1CacheLines + 2*L1tagbits + 128 + L1tagbits*4 + L1indexLength*4 + 20 + 26 + 28;
+  GatterCount += 160 + 5*offsetLength + 128 + 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*7;
+  GatterCount += (L2tagbits+1+cacheLineSize*8)*l2CacheLines + 32*4 + 15 +27 +21+128+160+160+64 +160 + 5*offsetLength + 128;
+  GatterCount += 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*4;
 
   if(allDone){
-    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),0};
+    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
   }
   else{
-    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), 0};
+    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), GatterCount};
   }
 }
