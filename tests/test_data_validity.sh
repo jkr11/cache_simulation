@@ -93,5 +93,4 @@ echo "The test is over."
 
 
 rm -r ./tmp/
-rm output.txt
 

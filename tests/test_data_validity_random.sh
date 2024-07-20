@@ -105,4 +105,3 @@ if [ $BOOL_DIFF = false ]; then
 fi
 
 rm -r ./tmp/
-rm output.txt
