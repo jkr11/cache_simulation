@@ -10,8 +10,8 @@
 #include "cacheL1.cpp"
 
 //#define L2_DETAIL
-//#define HIT_LOG
-#define TIME_LOG
+#define HIT_LOG
+//#define TIME_LOG
 SC_MODULE(CACHEL2){
     int latency;
     int cacheLines; // this has also to be 2er Potenz
