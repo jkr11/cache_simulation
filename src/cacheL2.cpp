@@ -10,7 +10,7 @@
 #include "cacheL1.cpp"
 
 //#define L2_DETAIL
-#define HIT_LOG
+//#define HIT_LOG
 //#define TIME_LOG
 SC_MODULE(CACHEL2){
     int latency;
@@ -30,9 +30,7 @@ SC_MODULE(CACHEL2){
     int indexLength;
     int tagOffset;
     int tagbits; // the length of tagbits
-
-    int waitingForLatency = 0;
-    
+  
     bool isWriteT;
 
     const char* name;
@@ -65,7 +63,6 @@ SC_MODULE(CACHEL2){
         this->cacheLines = cacheLines;
         this->cacheLineSize = cacheLineSize;
         this->L1cacheLines = L1CacheLines;
-        waitingForLatency = 0;
         hits = 0;
         miss = 0;
         offsetLength = (int)(log(cacheLineSize)/log(2));
@@ -109,30 +106,27 @@ SC_MODULE(CACHEL2){
             std::cout<<name<<" start working at: "<<sc_time_stamp()<<std::endl;
             #endif
             if(rw.read()){ // write enable
-                /*#ifdef L2_DETAIL
-                int receivedData = 0;
-                for(int i = 0; i< cacheLineSize;i++){
-                    receivedData += l1[inputData.read().to_int()].bytes[i];
-                }
-                std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<< std::hex << std::setw(8) << std::setfill('0')<<receivedData<< std::endl;
+                #ifdef L2_DETAIL
+                    int receivedData = 0;
+                    for(int i = 0; i< cacheLineSize;i++){
+                        receivedData += l1[inputData.read().to_int()].bytes[i];
+                    }
+                    std::cout<<name<<" received <write> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " and data:"<< std::hex << std::setw(8) << std::setfill('0')<<receivedData<< std::endl;
                 #endif
-                */
                 write();// by writeThrough we only expect a latency of Memory, therefore the latency of write() is omitted
             }else{
                 wait(latency*2,SC_NS); 
                 #ifdef L2_DETAIL
-                std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
+                    std::cout<<name<<" received <read> with addr:"<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< std::endl;
                 #endif
                 read();
             }
             #ifdef TIME_LOG
-            std::cout<<name<<" ready at time: "<<sc_time_stamp()<<std::endl;
+                std::cout<<name<<" ready at time: "<<sc_time_stamp()<<std::endl;
             #endif
         }else{
-            //std::cout<<name<<" waiting for request"<< std::endl;
             ready.write(true);
         }
-        waitingForLatency = 0;
         }
     }
 
@@ -152,7 +146,7 @@ SC_MODULE(CACHEL2){
         int t_tmp = address.read().range(31,tagOffset).to_uint();
         int i_tmp = address.read().range(tagOffset-1,indexOffset).to_uint();
         index = ifExist(t_tmp,i_tmp); 
-            if(index==-1){ // in the cache there are no such information // in Theory, this shall never happen, but for safty we kept these here
+            if(index==-1){ // in the cache there are no such information----- in Theory, this shall never happen, but for safty we kept these here
                 #ifdef HIT_LOG
                 std::cout<<name<<" miss by writing with addr: "<< std::hex << std::setw(8) << std::setfill('0')<<address.read().to_int()<< " detected, sending signal to next level"<< std::endl;
                 #endif
@@ -196,7 +190,6 @@ SC_MODULE(CACHEL2){
                 wait(latency*2,SC_NS); 
                 wait(latency*2,SC_NS); 
             }
-            //wait(); //wait for lastStage to exicute and change the request Singnal to false
             requestToLastStage.write(false);
         	ready.write(true);
             #ifdef L2_DETAIL
@@ -234,8 +227,10 @@ SC_MODULE(CACHEL2){
         int offset_tmp = address.read().range(indexOffset-1,0).to_uint();
         sc_bv<32> addressToMem = address.read();
         //addressToMem.range(offsetLength-1,0) = 0;//address alignment
+        #ifdef L2_DETAIL
         printCacheLine(index%cacheLines);
         printCacheLine((index+1)%cacheLines);
+        #endif
         sc_bv<32> data_tmp;
         if(readyFromLastStage.read()){
             wait(); // check if Memory havent got the chance to change
@@ -250,13 +245,11 @@ SC_MODULE(CACHEL2){
         rwToLastStage.write(true);
         if(offset_tmp < cacheLineSize-3){ // load data from 1 line
             for(int j = 0; j < 4; j++){
-                //std::cout<<name<<" write Through data loaded "<< std::hex << std::setw(2) << std::setfill('0')<<(uint32_t)internal[index].bytes[j] << std::endl;
                 data_tmp.range((j+1)*8-1,j*8) = internal[index].bytes[offset_tmp+j];
             }
         }else{
             int j;
             for(j = 0; offset_tmp+j < cacheLineSize; j++){
-                //std::cout<<name<<" write Through data loaded "<< std::hex << std::setw(2) << std::setfill('0')<<(uint32_t)internal[index].bytes[j] << std::endl;
                 data_tmp.range((j+1)*8-1,j*8) = internal[index].bytes[offset_tmp+j];
             }
             for(int i = j; i<4;i++){
@@ -271,26 +264,19 @@ SC_MODULE(CACHEL2){
         #endif
         addressToLastStage.write(addressToMem);
         wait();
-        //std::cout<<name<<" current 220 at time:"<<sc_time_stamp()<<std::endl;
         requestToLastStage.write(false);
-        //while(!readyFromLastStage.read()){ // wait until last stage is ready with write
-        //    wait();
-        //}
-        //wait(); // wait for the ready from mem to change
-        //std::cout<<name<<" current 223 at time:"<<sc_time_stamp()<<std::endl;
         #ifdef TIME_LOG
         std::cout<<name<<" finished write Through data at time:"<<sc_time_stamp()<<std::endl;
         #endif
     }
     void printCacheLine(int index){
-        #ifdef L2_DETAIL
+        
         std::cout<<name<<" with cache line: "<<index<<": tag: "<<internal[index].tag<<"|";
         for(int i = 0; i< cacheLineSize;i++){
             std::cout<< std::hex << std::setw(2) << std::setfill('0')<< (int)internal[index].bytes[i]<<"|";
         }
         std::cout<< std::endl;
-        #endif
-        (void) index;
+        
     }
     int loadFromMem(){
         sc_bv<32> addressToMem; 
