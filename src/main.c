@@ -64,7 +64,7 @@ int is_valid_csv(const char* filename)
 
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
 
-int sc_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     if (argc == 1)
     {
