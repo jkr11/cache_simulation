@@ -193,6 +193,12 @@ int sc_main(int argc, char* argv[])
                 HANDLE_ERROR("l2 cache lines must be positive");
             }
 
+            // Cache is not larger as memory (2^32 bytes) check
+
+            if (valueLong * (long) cacheLineSize >= 0xFFFFFFFF) {
+                HANDLE_ERROR("cache size should be smaller than memory space (2^32 bytes). Decreasing of the cache line size or the number of cachelines is required");
+            }
+
             l2CacheLines = (unsigned int) valueLong;
             if (!is_power_of_two(l1CacheLines))
             {
