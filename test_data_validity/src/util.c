@@ -5,7 +5,6 @@
 #include "../include/types.h"
 
 void print_request(const Request *req) {
-  printf("Request:\n");
   printf("\taddr: 0x%08X\n", req->addr);
   printf("\tdata: 0x%08X\n", req->data);
   printf("\twe: %d\n", req->we);
