@@ -104,3 +104,4 @@ CMakeUserPresets.json
 
 *.vcd
 *.csv.vcd
+*.txt
