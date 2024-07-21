@@ -6,7 +6,7 @@
 #include "../include/util.h"
 
 int main() {
-  const char *filename = "example.csv";
+  const char *filename = "faulty_csv.csv";
   size_t num_requests;
   Request *requests = parse_csv(filename, &num_requests);
 

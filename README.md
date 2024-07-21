@@ -51,6 +51,7 @@ Die Literaturrecherche ergab, dass die Latenzen standardmäßig bei L1 = 4 cycle
 
 Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
 
+
 Die Access csvs sind entweder in test.ipynb oder per Hand generiert, test und analyse mithilfe von .sh und .ipynb.
 
 
@@ -64,11 +65,11 @@ Das Projekt verifiziert das aus der Literatur erwartete Verhalten.
 Der Commit-Graph ist in gitgraph zu finden.
 
 ### Xuanqi Meng
-Entwicklung von einer Version von 3 Module und die Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
+Entwicklung von einer Version von 3 Modulen und der Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
 
-Teilweise Debuggen und Logikoptimierung. 
+Teilweise Debuggen und Logikoptimierung (Modulensynchronisation und Hit/Misszähler). 
 
-Entwurf von Schaltung der entsprechenden Programmlogik.
+Entwurf von Schaltung der entsprechenden Programmlogik und Korrektheitprüfung.
 ### Jeremias Rieser 
 Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety. 
 
@@ -78,13 +79,18 @@ Literaturrecherche, Slides und Grafiken.
 Entwickeln einer nur in Struktur verwendeten Cache-Simulation. 
 
 
+Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety.
+
+Implementierung von Rahmenprogramm, Makefiles, Include Literaturrecherche, Slides und Grafiken.
+
+Entwickeln einer nur in Struktur verwendeten Cache-Simulation.
+
 ### Artem Bilovol
-Erstellen und Ausführen von Tests (manuell/zufällig generiert) zur Überprüfung der korrekten Funktionalität des Cache (test_data_validity in tests/)
 
-Debuggen, insbesondere:
-    - korrekte Behandlung der Pfade für Tracefile und Inputfile (Funktionen expand_path und create_dir in main.c)
-    - Randfälle und Fehlermeldung für Kommandozeilenparameter (negative Werte, Cache größer als Speicher usw)
+Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
 
-Zusammenfassung und Ausblick (Analyse von Erweiterung und Verbesserung des Projekts)
+Erstellen Teste zur korrekten Funktionalität des Cache (tests/)
 
-Entwicklung von einer Version von 3 Modulen und Simulation (nicht als abzugebene Vorlage ausgewählt)
+Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
+
+Zusammenfassung und Ausblick von Folien
