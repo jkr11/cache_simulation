@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../include/csv_parser.h"
 #include "../include/simulation.h"
@@ -63,6 +66,7 @@ int is_valid_csv(const char* filename)
 }
 
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
+
 
 int main(int argc, char* argv[])
 {
@@ -234,7 +238,11 @@ int main(int argc, char* argv[])
             break;
         }
     }
-
+    if(tracefile!=NULL){
+        if(strchr(tracefile,'/')!=NULL){ //this is a path
+            HANDLE_ERROR("name of tracefile should not be a path");
+        }
+    }
     if (optind >= argc && optind != 1)
     {
         usage(argv[0]);
