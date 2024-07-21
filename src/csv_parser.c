@@ -54,11 +54,11 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
       HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
     }
 
-    if (type_str[0] == '\0' || type_str[1] != '\0') {
-      fclose(file);
-      free(requests);
-      HANDLE_ERROR_FMT("Invalid or empty type on line %d\n", ln);
-    }
+    // if (type_str[1] != '\0') {
+    //   fclose(file);
+    //   free(requests);
+    //   HANDLE_ERROR_FMT("Invalid or empty type on line %d\n", ln);
+    // }
 
     if (type_str[0] == 'W') {
       if (value_str == NULL || *value_str == '\0' ||
