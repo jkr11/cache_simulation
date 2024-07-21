@@ -54,11 +54,11 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
       HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
     }
 
-    if (type_str[0] == '\0' || type_str[1] != '\0') {
-      fclose(file);
-      free(requests);
-      HANDLE_ERROR_FMT("Invalid or empty type on line %d\n", ln);
-    }
+    // if (type_str[1] != '\0') {
+    //   fclose(file);
+    //   free(requests);
+    //   HANDLE_ERROR_FMT("Invalid or empty type on line %d\n", ln);
+    // }
 
     if (type_str[0] == 'W') {
       if (value_str == NULL || *value_str == '\0' ||
@@ -67,16 +67,6 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
         free(requests);
         HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
       }
-    } else if (type_str[0] == 'R') {
-      if (value_str != NULL && *value_str != '\0' && value_str[0] != '\n') {
-        fclose(file);
-        free(requests);
-        HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
-      }
-    } else {  // type_str isnt 'R' or 'W'
-      fclose(file);
-      free(requests);
-      HANDLE_ERROR_FMT("re not R or W format on line %d\n", ln);
     }
 
     req->we = (type_str[0] == 'W') ? 1 : 0;
