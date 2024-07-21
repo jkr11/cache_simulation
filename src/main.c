@@ -123,12 +123,7 @@ void create_dir(const char* path)
     dirPath[sizeof(dirPath) - 1] = '\0';
 
     char* curr = strtok(dirPath, "/");
-    char fullPath[256] = "";
-
-    // Correcting a relative path without leading '.'
-    if (path[0] != '.' && path[0] != '/')
-    {
-    }
+    char fullPath[1024] = "";
 
     // Turning a relative path into full (it can start with or without "./")
     if ((path[0] == '.' && path[1] == '/') ||
@@ -377,7 +372,8 @@ int main(int argc, char* argv[])
             {
                 HANDLE_ERROR("Tracefile path is too long");
             }
-        // Creating directories on the path of the tracefile if needed
+
+            // Creating directories on the path of the tracefile if needed
             create_dir(tracefile);
 
             printf("tracefile: %s\n", tracefile);
