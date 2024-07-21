@@ -395,6 +395,9 @@ int main(int argc, char* argv[])
     
     if (optind >= argc && optind != 1)
     {
+        if(tracefile!=NULL){
+            free(tracefile);
+        }
         usage(argv[0]);
         HANDLE_ERROR("Missing filename");
     }
@@ -405,6 +408,9 @@ int main(int argc, char* argv[])
 
         if (strlen(inputfile) > 256)
         {
+            if(tracefile!=NULL){
+                free(tracefile);
+            }
             free(inputfile);
             HANDLE_ERROR("Inputfile path is too long");
         }
@@ -412,12 +418,18 @@ int main(int argc, char* argv[])
         printf("%s\n", inputfile);
         if (!is_valid_csv(inputfile))
         {
+            if(tracefile!=NULL){
+                free(tracefile);
+            }
             free(inputfile);
             HANDLE_ERROR("Input file must be csv");
         }
         // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
         if (access(inputfile, F_OK) != 0)
         {
+            if(tracefile!=NULL){
+                free(tracefile);
+            }
             free(inputfile);
             HANDLE_ERROR("Input file does not exist");
         }
@@ -441,6 +453,9 @@ int main(int argc, char* argv[])
     FILE* file = fopen("results.csv", "w+");
     if (file == NULL)
     {
+        if(tracefile!=NULL){
+            free(tracefile);
+        }
         free(inputfile);
         free(requests);
         HANDLE_ERROR("Test file does not exist");
@@ -451,6 +466,9 @@ int main(int argc, char* argv[])
 
     fclose(file);
 #endif
+    if(tracefile!=NULL){
+        free(tracefile);
+    }
     free(inputfile);
     free(requests);
     exit(EXIT_SUCCESS);
