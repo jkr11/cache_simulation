@@ -80,6 +80,12 @@ Teilweise Debuggen und Logikoptimierung (Modulensynchronisation und Hit/Misszäh
 Entwurf von Schaltung der entsprechenden Programmlogik und Korrektheitprüfung.
 ### Jeremias Rieser 
 
+Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety.
+
+Implementierung von Rahmenprogramm, Makefiles, Include Literaturrecherche, Slides und Grafiken.
+
+Entwickeln einer nur in Struktur verwendeten Cache-Simulation.
+
 ### Artem Bilovol
 Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
 
