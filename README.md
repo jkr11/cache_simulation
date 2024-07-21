@@ -69,6 +69,10 @@ Manche der Testdaten wurden über python generiert, um möglichst einfach zufäl
 
 Die Tests selbst wurden mithilfe von .sh files durchgeführt.
 
+## Schaltkreis und Gatteranzahl
+
+der Entwurf von Schaltung ist in Schaltung/ zu finden. Die Berechnung von Gatter ist mit dem Entwurf vergleichbar. 
+
 ## Ergebnisse des Projekts
 
 Das Projekt verifiziert die erwartete Reduktion der Zugriffszeiten.
