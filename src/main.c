@@ -342,7 +342,10 @@ int main(int argc, char* argv[])
     }
 
     // Creating directories on the path of the tracefile if needed
-    create_dir(tracefile);
+    if(tracefile != NULL){
+        create_dir(tracefile);
+    }
+    
 
     if (optind >= argc && optind != 1)
     {
