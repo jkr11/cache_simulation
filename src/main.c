@@ -77,13 +77,19 @@ int main(int argc, char* argv[])
     }
     // can we estimate this at the beginning? at most 2^32 acesses * rough_count
     int cycles = 10000000;
-    // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf
+    // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf // 2012
+    // https://www.intel.com/content/dam/doc/manual/64-ia-32-architectures-optimization-manual.pdf#G9.83205 section 2.1.5  // 2024
+    // often l1CacheLines and L2CacheLines will around 32 KB or 256KB which would correspoint to around 4000 Cache lines
+    // and we have to scale down here a little bit
+    // testing this is the goal anyways
     unsigned cacheLineSize = 64;
     unsigned l1CacheLines = 32;
 
-    unsigned l2CacheLines = 128; // usually 4 times l1CacheLines
+    unsigned l2CacheLines = 128; // usually 4 to 8 times l1CacheLines
     // and
     // https://colin-scott.github.io/personal_website/research/interactive_latency.html
+    // https://www.anandtech.com/show/14664/testing-intel-ice-lake-10nm/2
+    // 
     // assuming 4 Ghz CPU
     unsigned l1CacheLatency = 4;
     unsigned l2CacheLatency = 16;
