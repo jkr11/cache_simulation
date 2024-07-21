@@ -6,6 +6,8 @@
 
 Das Ziel des Projektes war die Implementierung eines zweistufigen direkt assoziativen Caches mithilfe von SystemC und C++ und einem C-Rahmenprogramm. 
 
+Der Cache sollte in zwei Ebenen (L1 und L2) arbeiten und eine Speicherhierarchie simulieren.
+
 ## Implementierung
 
 
@@ -49,7 +51,9 @@ Das Zählen der Cycles selbst findet in run_simulation statt, die Latenzen werde
 Die Literaturrecherche ergab, dass die Latenzen standardmäßig bei L1 = 4 cycles, L2 = 16 und memory = 400 cycles liegen. Weiter wird in standartmäßigen Implementierungen unaligned memory access verwendet. Direkt assoziative Caches ermöglichen eine einfache Implementierung der Zugriffe und Verwaltung. Write-through vereinfacht die Implementierung und Kohärenz.
 ## Methodik und Messumgebung
 
-Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
+Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien.
+
+Die Korrektheit von Ein-/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
 
 Die Access csvs sind entweder in test.ipynb oder per Hand generiert, test und analyse mithilfe von .sh und .ipynb.
 
