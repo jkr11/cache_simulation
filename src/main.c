@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "../include/csv_parser.h"
 #include "../include/simulation.h"
@@ -64,7 +67,8 @@ int is_valid_csv(const char* filename)
 
 int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
 
-int sc_main(int argc, char* argv[])
+
+int main(int argc, char* argv[])
 {
     if (argc == 1)
     {
@@ -163,10 +167,9 @@ int sc_main(int argc, char* argv[])
                 HANDLE_ERROR("l2 cache lines must be positive");
             }
 
-            // Cache is not larger as memory (2^32 bytes) check
-
+            // Cache is smaller than memory (2^32 bytes) check
             if (valueLong * (long) cacheLineSize >= 0xFFFFFFFF) {
-                HANDLE_ERROR("cache size should be smaller than memory space (2^32 bytes). Decreasing of the cache line size or the number of cachelines is required");
+                HANDLE_ERROR("cache size should be smaller than memory");
             }
 
             l2CacheLines = (unsigned int) valueLong;
@@ -235,7 +238,11 @@ int sc_main(int argc, char* argv[])
             break;
         }
     }
-
+    if(tracefile!=NULL){
+        if(strchr(tracefile,'/')!=NULL){ //this is a path
+            HANDLE_ERROR("name of tracefile should not be a path");
+        }
+    }
     if (optind >= argc && optind != 1)
     {
         usage(argv[0]);

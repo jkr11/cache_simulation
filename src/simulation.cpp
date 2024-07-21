@@ -90,28 +90,24 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
 
     sc_trace(wf, clk,"clock");
     
-    sc_trace(wf, requestToL1, "requestToL1");
-    sc_trace(wf, inputDataToL1, "inputDataToL1");
-    sc_trace(wf, addressToL1, "addressToL1");
-    sc_trace(wf, rwToL1, "rwToL1");
+
+    // signals for oberservation for latency
     sc_trace(wf, readyFromL1, "readyFromL1");
-    sc_trace(wf, dataFromL1, "dataFromL1");
-
     sc_trace(wf, readyFromL2ToL1, "readyFromL2ToL1");
-    sc_trace(wf, dataFromL2ToL1, "dataFromL2ToL1");
-
-    sc_trace(wf, requestFromL1ToL2, "requestFromL1ToL2");
-    sc_trace(wf, dataFromL1ToL2, "dataFromL1ToL2");
-    sc_trace(wf, addressFromL1ToL2, "addressFromL1ToL2");
-    sc_trace(wf, rwFromL1ToL2, "rwFromL1ToL2");
-
     sc_trace(wf, readyFromMemToL2, "readyFromMemToL2");
+    sc_trace(wf, addressToL1, "addressToL1");
+
+    // signals for data in-flow
+    sc_trace(wf, inputDataToL1, "inputDataToL1");
+    sc_trace(wf, dataFromL1ToL2, "dataFromL1ToL2");
+    sc_trace(wf, dataFromL2ToMem, "dataFromL2ToMem");
+
+    // signals for data out-flow
+    sc_trace(wf, dataFromL1, "dataFromL1");
+    sc_trace(wf, dataFromL2ToL1, "dataFromL2ToL1");
     sc_trace(wf, dataFromMemToL2, "dataFromMemToL2");
 
-    sc_trace(wf, requestFromL2ToMem, "requestFromL2ToMem");
-    sc_trace(wf, rwFromL2ToMem, "rwFromL2ToMem");
-    sc_trace(wf, addressFromL2ToMem, "addressFromL2ToMem");
-    sc_trace(wf, dataFromL2ToMem, "dataFromL2ToMem");
+    
   }
 
   int indexForInput = 0;
@@ -135,7 +131,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         break;
       }
     }
-    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&(size_t)indexForInput<numRequests){ // if l1 is ready for operation
+    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&(size_t)indexForInput<numRequests){ // if all modules are ready for operation
       if(lastR){// store the read Data back to request
         requests[indexForInput-1].data = dataFromL1.read().to_int();
       }
@@ -153,7 +149,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
       }
       indexForInput++;
     }
-    clk.write(true);
+    clk.write(true); // clock running
     sc_start(1,SC_NS);
     requestToL1.write(false);
     clk.write(false);
@@ -219,10 +215,6 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         CachelineSize-bit-2-to-1 MUX: CachelineSize*4
         CachelineSize * 32-bit-2-to-1 MUX : CachelineSize*32*4
         Kein Demux n ̈otig, da wir kein 32-bit Daten auslesen sollen
-
-
-
-  
   */
   int GatterCount = 0;
   int offsetLength = (int)(log(cacheLineSize)/log(2));
@@ -230,15 +222,22 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   int L1tagbits = 32 - offsetLength-L1indexLength;
   int L2indexLength = (int)(log(l2CacheLines)/log(2));
   int L2tagbits = 32 - offsetLength-L2indexLength;
-  GatterCount += (L1tagbits+1+cacheLineSize*8)*l1CacheLines + 2*L1tagbits + 128 + L1tagbits*4 + L1indexLength*4 + 20 + 26 + 28;
+  
+  GatterCount += (L1tagbits+1+cacheLineSize*8)*l1CacheLines + 2*L1tagbits + (cacheLineSize*8)*4 + L1tagbits*4 + L1indexLength*4 + 20 + 26 + 28;
   GatterCount += 160 + 5*offsetLength + 128 + 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*7;
   GatterCount += (L2tagbits+1+cacheLineSize*8)*l2CacheLines + 32*4 + 15 +27 +21+128+160+160+64 +160 + 5*offsetLength + 128;
   GatterCount += 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*4;
 
   if(allDone){
-    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
+    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),(size_t)GatterCount};
   }
   else{
-    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), GatterCount};
+    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), (size_t)GatterCount};
   }
+}
+
+int sc_main(int argc, char* argv[]){
+  (void) argc;
+  (void) argv;
+  return 0;
 }

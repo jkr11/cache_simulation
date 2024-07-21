@@ -1,4 +1,3 @@
-SCPATH = SYSTEMC_HOME
 # C-Compiler
 CC = gcc
 # C++-Compiler
@@ -21,7 +20,7 @@ CPPOBJS = $(CPPSRC:.cpp=.o)
 
 
 # Executables
-EXEC = project
+EXEC = tester
 
 
 
