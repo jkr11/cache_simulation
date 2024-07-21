@@ -57,7 +57,7 @@ Die Korrektheit von Ein-/Auslesen durch Cache wurde durch Vergleich mit den Erge
 
 Die Access csvs sind entweder in test.ipynb oder per Hand generiert, test und analyse mithilfe von .sh und .ipynb.
 
-Die Berechnung von Gatteranzahl ist mit dem schaltungsentwurf in schaltkreis/ vergleichbar. 
+Die Berechnung von Gatteranzahl ist mit dem Schaltungsentwurf in (schaltkreis/) vergleichbar. 
 ## Ergebnisse des Projekts
 
 Das Projekt verifiziert das aus der Literatur erwartete Verhalten.
