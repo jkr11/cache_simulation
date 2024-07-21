@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
     print_result(&result);
 #endif
 #ifdef _OUT
-    FILE *file = fopen("results.csv", "a");
+    FILE *file = fopen("results.csv", "w+");
     if (file == NULL) {
         HANDLE_ERROR("Test file does not exist");
     }
