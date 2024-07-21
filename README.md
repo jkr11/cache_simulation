@@ -68,7 +68,7 @@ Entwicklung von einer Version von 3 Modulen und der Simulation, die später von 
 
 Teilweise Debuggen und Logikoptimierung (Modulensynchronisation und Hit/Misszähler). 
 
-Entwurf von Schaltung der entsprechenden Programmlogik und Korrektheitprüfung.
+Entwurf von Schaltung der entsprechenden Programmlogik und Korrektheitprüfung in Slides.
 ### Jeremias Rieser 
 Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety. 
 
@@ -77,22 +77,12 @@ Literaturrecherche, Slides und Grafiken.
 
 Entwickeln einer nur in Struktur verwendeten Cache-Simulation. 
 
-
-Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety.
-
-Implementierung von Rahmenprogramm, Makefiles, Include Literaturrecherche, Slides und Grafiken.
-
-Entwickeln einer nur in Struktur verwendeten Cache-Simulation.
-
 ### Artem Bilovol
 
 Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
 
 Erstellen Teste zur korrekten Funktionalität des Cache (tests/)
 
-Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
-
-Zusammenfassung und Ausblick von Folien
 Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
 
 Zusammenfassung und Ausblick von Folien
