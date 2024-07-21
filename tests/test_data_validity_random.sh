@@ -40,9 +40,9 @@ do
 		L1LINES=$L2LINES
 	fi	
 	
-	MEMLAT=12 #$(( (RANDOM * RANDOM) % 100000 ))
-	L2LAT=5 #$(( RANDOM * RANDOM % MEMLAT ))
-	L1LAT=3 #$(( RANDOM * RANDOM % L2LAT ))
+	MEMLAT=$(( (RANDOM * RANDOM) % 100000 ))
+	L2LAT=$(( RANDOM * RANDOM % (MEMLAT + 1) ))
+	L1LAT=$(( RANDOM * RANDOM % (L2LAT + 1) ))
 	
 	for INPUTFILE in ../examples/*.csv; do
 		if [ -f "$INPUTFILE" ]; then

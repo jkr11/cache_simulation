@@ -16,6 +16,7 @@
 	The second script expects the user to input a desired number of iterations (how many times files should be checked), and aftewords afterwords checks for correct functionality of cache implementation every .csv file in examples/ with random argument values.
 	If the test found no problems, at the end of the test an according message sent to stdout.
 	If there are problems, input arguments and the name of the .csv file sent to stdout.
+    The implementation of the second script requires a lot of time to test. If fast results required, it is recommended to add upper limits for random values or use constansts for some variables (especially latency)
 	
 # tester
 
