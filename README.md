@@ -2,21 +2,18 @@
 
 # GRA TEAM 192
 
-## Überblick
+## Aufgabestellung 
 
-### Aufgabestellung 
-
-Das Ziel des Projektes war die Implementierung eines zweistufigen direkt assoziativen Caches mithilfe von SystemC und einem C-Rahmenprogramm. Der Cache sollte in zwei Ebenen (L1 und L2) arbeiten und eine Speicherhierarchie simulieren.
+Das Ziel des Projektes war die Implementierung eines zweistufigen direkt assoziativen Caches mithilfe von SystemC und C++ und einem C-Rahmenprogramm. 
 
 ## Implementierung
 
-### Logik
 
 Darstellung der Cachelines |tag|data|empty als struct
 ```C++
 struct CacheLine {
   int tag;
-  uint8_t *bytes;
+  uint8_t *bytes;  
   int empty;
 };
 ```
@@ -28,15 +25,15 @@ SC_MODULE(CACHEL1)
 SC_MODULE(CACHEL2)
 SC_MODULE(MEMORY)
 ```
-welche jeweils den eigentlichen Cache als
+mit Speichern
 ```C++
 Cachelines* internal;
 ```
-verwalten und
+ und
 ```C++
 std::unordered_map<uint32_t,uint8_t>  internal;
 ```
-da die innere Logik von Memory nicht für die Simulation relevant ist.
+Hier wird außerdem unaligned access verwendet.
 
 ### Berechnung von Hit und Miss, cycles
 
@@ -49,28 +46,22 @@ Das Zählen der Cycles selbst findet in run_simulation statt, die Latenzen werde
 
 ## Literaturrecherche
 
-Die Literaturrecherche ergab, dass die Latenzen (hier normalisiert über einen 4GHz Prozessor) bei L1 = 3 cycles, L2 = 20 und memory = 50 cycles liegen. Weiter wird in standartmäßigen Implementierungen unaligned memory access verwendet. Direkt assoziative Caches ermöglichen eine einfache Implementierung der Zugriffe und Verwaltung, ebenso vereinfacht die Write-through method die Implementierung (und Kohärenz bzgl. Inklusivität) im vergleich zu z.B. write-back.
-
+Die Literaturrecherche ergab, dass die Latenzen standardmäßig bei L1 = 4 cycles, L2 = 16 und memory = 400 cycles liegen. Weiter wird in standartmäßigen Implementierungen unaligned memory access verwendet. Direkt assoziative Caches ermöglichen eine einfache Implementierung der Zugriffe und Verwaltung. Write-through vereinfacht die Implementierung und Kohärenz.
 ## Methodik und Messumgebung
 
 Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
 
-Die Korrektheit von Ein-/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
+Die Access csvs sind entweder in test.ipynb oder per Hand generiert, test und analyse mithilfe von .sh und .ipynb.
 
-Manche der Testdaten wurden über python generiert, um möglichst einfach zufällige dicht- und weitverteilte Zugriffsfolgen zu bekommen (generate.py).
-
-Die Tests selbst wurden mithilfe von .sh files durchgeführt.
-
-## Schaltkreis und Gatteranzahl
-
-der Entwurf von Schaltung ist in Schaltung/ zu finden. Die Berechnung von Gatter ist mit dem Entwurf vergleichbar. 
 
 ## Ergebnisse des Projekts
 
-Das Projekt verifiziert die erwartete Reduktion der Zugriffszeiten.
+Das Projekt verifiziert das aus der Literatur erwartete Verhalten.
 
 
 ## Beitrag
+
+Der Commit-Graph ist in gitgraph zu finden.
 
 ### Xuanqi Meng
 Entwicklung von einer Version von 3 Modulen und der Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
@@ -79,6 +70,13 @@ Teilweise Debuggen und Logikoptimierung (Modulensynchronisation und Hit/Misszäh
 
 Entwurf von Schaltung der entsprechenden Programmlogik und Korrektheitprüfung.
 ### Jeremias Rieser 
+Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety. 
+
+Implementierung von Rahmenprogramm, Makefiles, Include
+Literaturrecherche, Slides und Grafiken.
+
+Entwickeln einer nur in Struktur verwendeten Cache-Simulation. 
+
 
 Erstellen von Tests und acccess-csvs, verifizierung und analyse der Ergebnisse. Debugging und teilweise Memory safety.
 
@@ -87,6 +85,7 @@ Implementierung von Rahmenprogramm, Makefiles, Include Literaturrecherche, Slide
 Entwickeln einer nur in Struktur verwendeten Cache-Simulation.
 
 ### Artem Bilovol
+
 Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
 
 Erstellen Teste zur korrekten Funktionalität des Cache (tests/)
@@ -94,4 +93,6 @@ Erstellen Teste zur korrekten Funktionalität des Cache (tests/)
 Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
 
 Zusammenfassung und Ausblick von Folien
+Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
 
+Zusammenfassung und Ausblick von Folien

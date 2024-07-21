@@ -16,7 +16,7 @@
 #include "../include/util.h"
 // #include "simulation.h"
 
-//#define _DEBUG
+#define _DEBUG
 //#define _OUT
 // is printing to stderr correct? NETBSD does it
 

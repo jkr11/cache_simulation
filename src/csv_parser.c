@@ -65,7 +65,7 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
           *value_str == '\n') {  // Handle empty string case
         fclose(file);
         free(requests);
-        HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
+        HANDLE_ERROR_FMT("There must be input data for a WRITE request %d\n", ln);
       }
     } else if (type_str[0] != 'R') {// type_str isnt 'R' or 'W'
       fclose(file);
