@@ -81,12 +81,12 @@ Entwurf von Schaltung der entsprechenden Programmlogik.
 ### Jeremias Rieser 
 
 ### Artem Bilovol
-Erstellen und Ausführen von Tests (einer mit manuellen Eingaben und einer mit zufällig generierten Werten) zur Überprüfung der korrekten Funktionalität des Cache (test_data_validity in tests/)
+Erstellen und Ausführen von Tests zur Überprüfung der korrekten Funktionalität des Cache (test_data_validity in tests/)
 
 Debuggen, insbesondere:
-    - korrekte Behandlung der Pfade für Tracefile und Inputfile (Funktionen expand_path und create_dir in main.c)
-    - Randfälle und Fehlermeldung für andere Kommandozeilenparameter (negative Werte, Cache ist großer als Speicher usw)
+    - korrekte Behandlung Dateipfade (Funktionen expand_path und create_dir in main.c)
+    - Randfälle und Fehlermeldung (negative Werte, Cache ist großer als Speicher usw)
 
-Zusammenfassung und Ausblick (Analyse Bereiche für Erweiterung und Verbesserung des Projekts)
+Zusammenfassung und Ausblick (Analyse Bereiche für Erweiterung des Projekts)
 
-Entwicklung von einer Version von 3 Module und die Simulation (wurde nicht als abzugebene Vorlage ausgewählt)
+Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
