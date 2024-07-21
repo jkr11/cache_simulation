@@ -111,8 +111,15 @@ void create_dir(const char* path)
     char* curr = strtok(dirPath, "/");
     char fullPath[256] = "";
 
-    // Turning a realtive path into full
-    if (path[0] == '.' && path[1] == '/')
+    // Correcting a relative path without leading '.'
+    if (path[0] != '.' && path[0] != '/')
+    {
+    }
+
+    // Turning a relative path into full (it can start with or without "./")
+    if ((path[0] == '.' && path[1] == '/') ||
+        (path[0] != '.' && path[0] != '/')
+    )
     {
         strcpy(fullPath, ".");
     }
@@ -327,6 +334,8 @@ int main(int argc, char* argv[])
             {
                 HANDLE_ERROR("Tracefile path is too long");
             }
+        // Creating directories on the path of the tracefile if needed
+            create_dir(tracefile);
 
             printf("tracefile: %s\n", tracefile);
             break;
@@ -340,9 +349,6 @@ int main(int argc, char* argv[])
             break;
         }
     }
-
-    // Creating directories on the path of the tracefile if needed
-    create_dir(tracefile);
 
     if (optind >= argc && optind != 1)
     {
@@ -386,13 +392,14 @@ int main(int argc, char* argv[])
     print_result(&result);
 #endif
 #ifdef _OUT
-    FILE *file = fopen("results.csv", "w+");
-    if (file == NULL) {
+    FILE* file = fopen("results.csv", "w+");
+    if (file == NULL)
+    {
         HANDLE_ERROR("Test file does not exist");
     }
 
     fprintf(file, "%zu,%zu,%zu,%zu\n", result.cycles, result.misses,
-          result.hits, result.primitiveGateCount);
+            result.hits, result.primitiveGateCount);
 
     fclose(file);
 #endif
