@@ -2,6 +2,7 @@
 	
 # how to use
 
+    Project should be compiled in debugging mode ("#define _DEBUG" not commented in main.c)
 	Navigate to tests/ and execute bash name.sh, with the the desired script name on the place of "name"
 	
 # explanation

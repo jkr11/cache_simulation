@@ -67,7 +67,7 @@ char* expand_path(char* path)
     {   
         char* pathDyn = (char*)calloc(strlen(path)+1,sizeof(char));
         if (pathDyn == NULL){
-            HANDLE_ERROR("Failed to create a path");
+            HANDLE_ERROR("failed to create a path");
         }
         strcpy(pathDyn,path);
         return pathDyn;
@@ -76,11 +76,11 @@ char* expand_path(char* path)
     // Should not exceed maximal path length
     long maxL = pathconf("/", _PC_PATH_MAX);
     if(maxL == -1){
-        HANDLE_ERROR("Failed to create a tracefile");
+        HANDLE_ERROR("failed to create a tracefile");
     }
     char* exp = (char*)calloc(maxL,sizeof(char));
     if (exp == NULL){
-            HANDLE_ERROR("Failed to create a path");
+            HANDLE_ERROR("failed to create a path");
     }
 
     // Getting the home directory
@@ -88,7 +88,7 @@ char* expand_path(char* path)
     if (home == NULL)
     {
         free(exp);
-        HANDLE_ERROR("Failed to create a tracefile");
+        HANDLE_ERROR("failed to create a tracefile");
     }
 
     // Constructing the new path
@@ -97,7 +97,7 @@ char* expand_path(char* path)
     if (expPath == NULL)
     {
         free(exp);
-        HANDLE_ERROR("Failed to create a tracefile");
+        HANDLE_ERROR("failed to create a tracefile");
     }
 
     strcpy(expPath, exp);
@@ -148,7 +148,7 @@ void create_dir(const char* path)
         {
             if (mkdir(fullPath, 0777) != 0)
             {
-                HANDLE_ERROR("Failed to create directories for the tracefile");
+                HANDLE_ERROR("failed to create directories for the tracefile");
             }
         }
         curr = strtok(NULL, "/");
@@ -157,7 +157,7 @@ void create_dir(const char* path)
     // Checking if directories exist and writable
     if (access(directories, F_OK) == -1 || access(directories, W_OK) == -1)
     {
-        HANDLE_ERROR("Failed to create directories for the tracefile or no permissions to write there");
+        HANDLE_ERROR("failed to create directories for the tracefile or no permissions to write there");
     }
 }
 
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
             cycles = atoi(optarg);
             if (cycles < 0)
             {
-                HANDLE_ERROR("cycles must be not negative");
+                HANDLE_ERROR("cycles value must be not negative and not too large");
             }
             printf("cycles: %d\n", cycles);
             break;
@@ -241,6 +241,10 @@ int main(int argc, char* argv[])
             if (*endptr != '\0' || valueLong < 4)
             {
                 HANDLE_ERROR("cache line size must be at least 4");
+            }
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("cache line size is too large");
             }
 
             cacheLineSize = (unsigned int)valueLong;
@@ -256,14 +260,19 @@ int main(int argc, char* argv[])
 
             if (*endptr != '\0' || valueLong <= 0)
             {
-                HANDLE_ERROR("l1 cache lines must be positive");
+                HANDLE_ERROR("l1 cache lines value must be positive");
+            }
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("l1 cache lines value is too large");
             }
 
             l1CacheLines = (unsigned int)valueLong;
             if (l1CacheLines < 2)
             {
-                HANDLE_ERROR("l1 cache lines must be greater than 2 to handel unaligned access sensible");
+                HANDLE_ERROR("l1 cache lines must be greater than 2 to handle unaligned access sensible");
             }
+
             if (!is_power_of_two(l1CacheLines))
             {
                 HANDLE_ERROR("l1 cache lines must be power of 2");
@@ -276,7 +285,12 @@ int main(int argc, char* argv[])
 
             if (*endptr != '\0' || valueLong < 0)
             {
-                HANDLE_ERROR("l2 cache lines must be positive");
+                HANDLE_ERROR("l2 cache lines value must be positive");
+            }
+
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("l2 cache lines value is too large");
             }
 
         // Cache is smaller than memory (2^32 bytes) check
@@ -305,6 +319,11 @@ int main(int argc, char* argv[])
                 HANDLE_ERROR("l1 Latency must be not negative");
             }
 
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("l1 latency value is too large");
+            }
+
             l1CacheLatency = (unsigned int)valueLong;
             printf("l1CacheLatency: %d\n", l1CacheLatency);
             break;
@@ -315,6 +334,11 @@ int main(int argc, char* argv[])
             if (*endptr != '\0' || valueLong < 0)
             {
                 HANDLE_ERROR("l2 Latency must be not negative");
+            }
+
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("l2 latency value is too large");
             }
 
             l2CacheLatency = (unsigned int)valueLong;
@@ -330,7 +354,12 @@ int main(int argc, char* argv[])
 
             if (*endptr != '\0' || valueLong < 0)
             {
-                HANDLE_ERROR("memory Latency must be not negative");
+                HANDLE_ERROR("memory latency must be not negative");
+            }
+
+            if (valueLong > UINT_MAX)
+            {
+                HANDLE_ERROR("memory latency value is too large");
             }
 
             memoryLatency = (unsigned int)valueLong;
