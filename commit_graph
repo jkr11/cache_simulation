@@ -1,0 +1,378 @@
+* f032dc5 jkr11 final push?
+* dfa85cc jkr11 slides + build.sh
+* aed118e MengX7 Update README.md
+*   cb9d8ed MengX7 Merge pull request #46 from jkr11/endVersion
+|\  
+| * 6a2363e Entscheidbarkeit example file normalized
+|/  
+* a575f63 MengX7 Update README.md
+* fa49d92 MengX7 Update README.md
+* ca97acd MengX7 Update README.md
+*   0aac365 artem Merge remote-tracking branch 'origin/main'
+|\  
+| * 1f1cee0 Entscheidbarkeit jkr removed
+| * be0b594 jkr11 Update README.md
+| * ef21d4c jkr11 Update README.md
+| *   f13eb12 jkr11 Merge pull request #45 from jkr11/jkrmd
+| |\  
+| | * d5d2983 jkr11 Update README.md
+| | *   798b44a jkr11 Merge branch 'main' into jkrmd
+| | |\  
+| | |/  
+| |/|   
+| * | 6d50b30 MengX7 Update README.md
+| * | 963880b Xq Entwurf von Schaltkreis
+| * |   1dee47c jkr11 Merge pull request #44 from jkr11/cleanup
+| |\ \  
+| * \ \   ac3d743 MengX7 Merge pull request #43 from jkr11/endVersion
+| |\ \ \  
+| | * | | 77e5763 Entscheidbarkeit removed useful
+| * | | | 38cce03 artem Merge remote-tracking branch 'origin/main'
+| |\| | | 
+| | | | * 592312d jkr11 399 words
+* | | | |   d0897b9 artem Additional edge cases checked
+|\ \ \ \ \  
+| |/ / / /  
+|/| / / /   
+| |/ / /    
+| * | |   b1e485e jkr11 Merge pull request #42 from jkr11/cleanup
+| |\ \ \  
+* | \ \ \   fca0e28 jkr11 Grammar in README
+|\ \ \ \ \  
+| |/ / / /  
+|/| / / /   
+| |/ / /    
+* | | | 0b32b62 MengX7 Update README.md
+* | | | e7771c6 MengX7 Update README.md
+| | | | * a3c9855 jkr11 it should look like this on artemis
+| | | |/  
+| | |/|   
+| | * | 1ca6037 jkr11 merge test tests
+| |/ /  
+| * / 4343d14 jkr11 cleanup
+|/ /  
+* |   e63114f jkr11 merge
+|\ \  
+| * | 208ef23 jkr11 update
+* | |   1fc7dc1 artem Merge remote-tracking branch 'origin/main'
+|\ \ \  
+| * \ \   b947453 MengX7 Merge pull request #40 from jkr11/endVersion
+| |\ \ \  
+| | |_|/  
+| |/| |   
+* | | |   05cfe1d MengX7 Shorted my README part
+|\ \ \ \  
+| |/ / /  
+|/| / /   
+| |/ /    
+| * | fc434d7 Entscheidbarkeit Mem Leak by expandPath fixed
+| * | 503e669 Entscheidbarkeit Mem Leak by expandPath fixed
+| * |   f86a736 Entscheidbarkeit Merge branch 'main' into endVersion
+| |\ \  
+| * | | 1fb0cde Entscheidbarkeit verified with tracefile
+* | | | 71efa52 artem Added my part of README.md
+| |/ /  
+|/| |   
+* | | c3449a5 artem Nullpointer error fixed
+|/ /  
+* | 64acb21 artem Mistake with permissions is fixed
+* | 606ec13 artem - Added check for path length - Error in the case a directory for a tracefile not accessible
+|/  
+*   ea30c5a MengX7 Merge pull request #39 from jkr11/endVersion
+|\  
+| *   5190043 MengX7 Merge branch 'main' into endVersion
+| |\  
+| |/  
+|/|   
+* |   dd280bf jkr11 Merge pull request #38 from jkr11/graph
+|\ \  
+| * \   52f7792 jkr11 Merge branch 'main' into graph
+| |\ \  
+| |/ /  
+|/| |   
+| * | 73470cc jkr11 update
+| * | 92e06f5 jkr11 working graphs, maybe csv_parser is broken? only works in shell not python
+| * |   6ca9782 jkr11 Merge brach 'main' into graph
+| |\ \  
+| * | | d47f444 jkr11 sparse + dense + unaligned in one function
+| * | | e86668e jkr11 data loop works now, only need to decide how to eval (fixed L1 -> variable L2 for example), and sparse and dense data
+| * | |   50b2fa4 jkr11 Merge branch 'main' into graph
+| |\ \ \  
+| * | | | d82966b jkr11 update
+| * | | | 676dc99 jkr11 goo d for now
+| * | | | f909e72 jkr11 update main
+| * | | | f88d04a jkr11 add graphing and tests using python
+| | | | *   7cf6836 Entscheidbarkeit project excu deleted
+| | | | |\  
+| |_|_|_|/  
+|/| | | |   
+* | | | | 4ca75a2 artem Correcting work with paths for trace- and inputfile
+* | | | |   7bdcdf4 jkr11 Merge pull request #37 from jkr11/clean
+|\ \ \ \ \  
+| |_|_|/ /  
+|/| | | |   
+| * | | | 50fdde7 jkr11 update sources
+| * | | | be18342 jkr11 update
+|/ / / /  
+| | | * 30948a7 Entscheidbarkeit csv parser by READ
+| |_|/  
+|/| |   
+* | |   96fe522 jkr11 Merge pull request #36 from jkr11/make
+|\ \ \  
+| |_|/  
+|/| |   
+| * | 67af745 jkr11 change Makefile and fix csv_parser
+|/ /  
+* |   10d5a3a MengX7 Merge pull request #35 from jkr11/endVersion
+|\ \  
+| * | 7f21572 Entscheidbarkeit saubere Code ohne Debug Info
+|/ /  
+* | 3cddc05 artem Merge remote-tracking branch 'refs/remotes/origin/tests_new_directory'
+* | 8a403d0 artem Merge remote-tracking branch 'refs/remotes/origin/tests_new_directory'
+* |   71f5b21 artem Merge remote-tracking branch 'refs/remotes/origin/tests_new_directory'
+|\ \  
+| * | c8c7a16 artem Merge pull request #29 from jkr11/entscheibar2
+* | |   1f13958 MengX7 Merge pull request #34 from jkr11/entscheibar2
+|\ \ \  
+| * | | 6aedbb8 Entscheidbarkeit mehr Dokumentation und saubere Code
+* | | | 489f96d MengX7 Merge pull request #33 from jkr11/entscheibar2
+|\| | | 
+| * | | 67de1e9 Entscheidbarkeit test_validity.sh aktualisiert
+* | | | 62d7d07 MengX7 Merge pull request #32 from jkr11/entscheibar2
+|\| | | 
+| |_|/  
+|/| |   
+| * | 22a2852 Entscheidbarkeit sc_main in simulation geschiebt
+| * | 3a93489 Entscheidbarkeit merge from main, main.c verändert
+| * |   b8bc574 Entscheidbarkeit Merge branch 'main' of github.com:jkr11/gra_project_test into entscheibar2
+| |\ \  
+| |/ /  
+|/| |   
+| * | 33c55aa Entscheidbarkeit saubere Code
+| | | * c3c8aae MengX7 Update README.md
+| | | * c4f60ba MengX7 Update README.md
+| | | * dce73b2 MengX7 Update README.md
+| | | * 19c5354 MengX7 Update README.md
+| | | * 9e410ad jkr11 360 Words
+| |_|/  
+|/| |   
+| | | * 9c86074 jkr11 WIP on main: 814d2a6 clean up main
+| |_|/| 
+|/| | | 
+| | | * fa4ac37 jkr11 index on main: 814d2a6 clean up main
+| |_|/  
+|/| |   
+* | | 814d2a6 jkr11 clean up main
+|/ /  
+* | 219f64d jkr11 remove output + update gitignore
+* |   88d6ed0 MengX7 Merge pull request #31 from jkr11/entscheibar2
+|\ \  
+| |/  
+|/|   
+| * 6331ba0 Entscheidbarkeit Directory cleaned
+| *   29c10c5 Entscheidbarkeit Merge branch 'main' of github.com:jkr11/gra_project_test into entscheibar2
+| |\  
+| |/  
+|/|   
+* | 376a608 artem Merge pull request #29 from jkr11/entscheibar2
+* | 83dcb36 artem Merge pull request #29 from jkr11/entscheibar2
+* | fef328c artem Merge pull request #29 from jkr11/entscheibar2
+* |   ae8359e MengX7 Merge pull request #30 from jkr11/entscheibar2
+|\ \  
+| | * a513759 Entscheidbarkeit try to merge with main
+| |/  
+| *   7c987fa Entscheidbarkeit Merge branch 'main' of github.com:jkr11/gra_project_test into entscheibar2
+| |\  
+| |/  
+|/|   
+* |   1dcfd3b artem Merge remote-tracking branch 'origin/main'
+|\ \  
+| * \   9febe58 MengX7 Merge pull request #29 from jkr11/entscheibar2
+| |\ \  
+* | \ \   2080bdc MengX7 Merge pull request #29 from jkr11/entscheibar2
+|\ \ \ \  
+| |/ / /  
+|/| / /   
+| |/ /    
+| | * 3da91e2 Entscheidbarkeit Gatter Berechnung bestimmt
+| | * b4e0a8f Entscheidbarkeit veranderung bei .sh
+| |/  
+| * 7f968f8 Entscheidbarkeit neue Strategie bei Cycles
+|/  
+*   d0b0713 MengX7 Merge pull request #28 from jkr11/entscheibar2
+|\  
+| *   d4894b0 MengX7 Merge branch 'main' into entscheibar2
+| |\  
+| |/  
+|/|   
+* |   a37f21f jkr11 Merge pull request #27 from jkr11/util
+|\ \  
+| | * 36b7d5a Entscheidbarkeit small fix of Debug info
+| | | * d009e66 jkr11 update md 200 words
+| | |/  
+| |/|   
+| * | 507ab34 jkr11 better formatting
+|/ /  
+* | bba71f8 MengX7 Merge pull request #26 from jkr11/entscheibar2
+|\| 
+| * 3a263e0 Entscheidbarkeit Write Through gleichzeitig
+| * 3e16097 Entscheidbarkeit Write Through versuch
+* | 6682878 MengX7 Merge pull request #25 from jkr11/entscheibar2
+|\| 
+| * 9a5a458 Entscheidbarkeit cycles bestimmt
+|/  
+| * 74a22dc artem Tester patch for "cycles"
+|/  
+*   e1a556c MengX7 Merge pull request #24 from jkr11/test_data_validity
+|\  
+| | *   4098b33 jkr11 Merge branch 'test_data_validity' of github.com:jkr11/gra_project_test into test_data_validity
+| | |\  
+| | |/  
+| |/|   
+| * |   b5b16c8 MengX7 Merge pull request #23 from jkr11/main
+| |\ \  
+| |/ /  
+|/| |   
+* | |   2284962 MengX7 Merge pull request #22 from jkr11/test_data_validity
+|\ \ \  
+| | * | c1803e4 artem Adding testing data
+| |/ /  
+| | * 841e730 jkr11 remove invalid csvs
+| |/  
+| * 9026d03 artem Adding testing data
+|/  
+*   9997026 jkr11 Merge pull request #21 from jkr11/new_test
+|\  
+| *   05392e0 jkr11 Merge branch 'main' into new_test
+| |\  
+| |/  
+|/|   
+* |   a8e1e7d MengX7 Merge pull request #18 from jkr11/Entscheidbarkeit
+|\ \  
+| | * b9092cb jkr11 gitignore
+| | * 07e7e46 jkr11 gitignore
+| | * cb841aa jkr11 gitignore
+| | * 3c64995 jkr11 update
+| | * 28c9556 jkr11 update
+| | * 2eca54c jkr11 update
+| | * d026bc8 jkr11 add testing for random offset
+| | * c4fb033 jkr11 update
+| | | * 8db0881 MengX7 Update simulation.cpp
+| | |/  
+| |/|   
+| * |   dd9e336 MengX7 Merge branch 'main' into Entscheidbarkeit
+| |\ \  
+| |/ /  
+|/| /   
+| |/    
+* |   ce30977 jkr11 Merge pull request #17 from jkr11/slides
+|\ \  
+| * | 71164e7 jkr11 update
+* | | 87f206f jkr11 add branch in folder
+* | | 5373e01 jkr11 Merge pull request #16 from jkr11/updatejkr
+|\| | 
+| * | 3632d6f jkr11 update
+| * | d436052 jkr11  ile
+| * | 0712e49 jkr11 update
+| | * 339056d Entscheidbarkeit noch mal debugged mit Synchronisation
+| | * 638353b Entscheidbarkeit noch mal debugged mit Synchronisation
+| | | * a3520bd jkr11 update
+| | | * 18cede3 jkr11 update
+| | | * 043ed46 jkr11 ?
+| | | * 7df4354 jkr11 update
+| | | * 13d7435 jkr11 tester
+| | |/  
+| | * 7df4dae Entscheidbarkeit cache line size bug fixed
+| | | * 95ae9c7 jkr11 update
+| | |/  
+| | * 59f83ef Entscheidbarkeit file to test cycles
+| | * 1da94cf Entscheidbarkeit files to test alignment
+| | * a125da0 Entscheidbarkeit unalignment access realized
+| | * fd180de Entscheidbarkeit mehr Dokumentation
+| |/  
+| * 7ef918a Entscheidbarkeit intensive Anfrage mit 100 Zeile
+| * 11e2011 Entscheidbarkeit diskrete Anfrage mit 100 Zeile
+| * 52705ee Entscheidbarkeit endlich nutzbar!
+| * f51b432 Entscheidbarkeit first version for 4 Byte Ok!
+| * eae77e5 Entscheidbarkeit first version for 4 Byte Ok!
+| | * ae7f54b jkr11 update
+| | * ef9c46e jkr11 update
+| | | *   534491f artem Merge remote-tracking branch 'origin/languageExplorer'
+| | | |\  
+| |_|_|/  
+|/| | |   
+| | | *   2ef8dc3 MengX7 Implemented with the possibility of a number of cachelines not as a power of 2. Does not compile
+| | | |\  
+| | |_|/  
+| |/| |   
+| | | | *   c123f92 jkr11 Merge pull request #13 from jkr11/cache_test
+| | | | |\  
+| | | |_|/  
+| | |/| |   
+| | * | | 875d15f jkr11 update
+| | * | | 1915b53 jkr11 update
+| | | | *   d0a4ba3 jkr11 Merge pull request #12 from jkr11/cache_test
+| | | | |\  
+| | | |_|/  
+| | |/| |   
+| | * | | 5319314 jkr11 utils working
+| | * | | ab6119a jkr11 refactor
+| | * | | eee2e7e jkr11 update
+| | * | | cc2a124 jkr11 dont know if these results are correct but it finally compiled
+| |/ / /  
+|/| | |   
+* | | | 12c9d96 MengX7 Merge pull request #11 from jkr11/Entscheidbarkeit
+|\| | | 
+| |/ /  
+|/| |   
+| * | 75d2a19 Entscheidbarkeit readme updated
+| * | 51976b2 Entscheidbarkeit update for Frame, Logic for validation and malloc optimized
+|/ /  
+* |   a6c0631 jkr11 Merge pull request #10 from jkr11/default
+|\ \  
+| * | 34afa58 jkr11 updtae
+| |/  
+| * ad7a215 jkr11 add cacheController primitve
+| * e3f593c jkr11 first attempt at cache
+* | 3b9e309 jkr11 Merge pull request #9 from jkr11/cache
+|\| 
+| * be758f4 jkr11 small makefile change
+* | fa365f6 jkr11 Merge pull request #8 from jkr11/cache
+|\| 
+| * 0fd919c jkr11 change TODOs and fix test.sh
+* | df148e1 jkr11 Merge pull request #7 from jkr11/instructions
+|\| 
+| * a15b223 jkr11 fixed makefile
+| * ee3bb88 jkr11 Makefile works now
+* | 743d6e1 jkr11 Merge pull request #6 from jkr11/instructions
+|\| 
+| * 45d86ec jkr11 update formatting
+* | 9ccd9b7 jkr11 Merge pull request #5 from jkr11/instructions
+|\| 
+| * 442cc87 jkr11 bugfix
+* | 823c7ba jkr11 Merge pull request #4 from jkr11/instructions
+|\| 
+| * c841da8 jkr11 add utils
+| * 502b455 jkr11 update with util.h
+* | 0853afa jkr11 Merge pull request #3 from jkr11/instructions
+|\| 
+| * 67e5bc0 jkr11 add instructions
+* | de0a005 jkr11 Merge pull request #2 from jkr11/cli-parsig
+|\| 
+| * fc7bd67 jkr11 everything works now
+| * 219d6be jkr11 update
+| * 1c689a7 jkr11 really unsure about C++/C interop, maybe we should do it the other way around
+| * 6153a69 jkr11 parsing works now
+| * 0525849 jkr11 parsing works but needs to be refactored
+* | 6a5ce97 jkr11 Merge pull request #1 from jkr11/test
+|\| 
+| * e91a39d jkr11 branch testing
+|/  
+*   e798cea jkr11 Merge branch 'main' of github.com:jkr11/gra_project_test merge for missing gitignore
+|\  
+| * d260340 jkr11 Delete .vscode directory
+* | 7fded5d jkr11 cleanup + gitignore
+|/  
+* bd33ac7 jkr11 add template
+* e68bf63 jkr11 add template
+* 343d564 jkr11 init
