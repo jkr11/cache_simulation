@@ -106,5 +106,6 @@ CMakeUserPresets.json
 *.csv.vcd
 *.txt
 
+# python venv
 gra/
 venv/
