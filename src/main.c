@@ -7,6 +7,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libgen.h>
+#include <limits.h>
 
 #include "../include/csv_parser.h"
 #include "../include/simulation.h"
@@ -58,6 +60,80 @@ static void usage(const char* prog_name)
             "Programm danach beendet.\n");
 }
 
+// Function to expand the path if starts with '~'
+char* expand_path(char* path)
+{
+    if (path[0] != '~')
+    {
+        return path;
+    }
+
+    // Should not exceed maximal path length
+    char exp[pathconf("/", _PC_PATH_MAX)];
+
+    // Getting the home directory
+    const char* home = getenv("HOME");
+    if (home == NULL)
+    {
+        HANDLE_ERROR("Failed to create a tracefile");
+    }
+
+    // Constructing the new path
+    snprintf(exp, sizeof(exp), "%s%s", home, path + 1);
+    char* expPath = (char*)malloc(strlen(exp) + 1);
+    if (expPath == NULL)
+    {
+        HANDLE_ERROR("Failed to create a tracefile");
+    }
+
+    strcpy(expPath, exp);
+
+    return expPath;
+}
+
+// Function to create directories along the path if needed
+void create_dir(const char* path)
+{
+    char tmp[256];
+    strncpy(tmp, path, sizeof(tmp) - 1);
+    tmp[sizeof(tmp) - 1] = '\0';
+
+    // Processing directories in the path
+    char* directories = dirname(tmp);
+
+    // This variable is required to check directory properties later
+    struct stat s;
+
+    char dirPath[256];
+    strncpy(dirPath, directories, sizeof(dirPath) - 1);
+    dirPath[sizeof(dirPath) - 1] = '\0';
+
+    char* curr = strtok(dirPath, "/");
+    char fullPath[256] = "";
+
+    // Turning a realtive path into full
+    if (path[0] == '.' && path[1] == '/')
+    {
+        strcpy(fullPath, ".");
+    }
+
+    // Iterating and creating each required directory
+    while (curr != NULL)
+    {
+        strcat(fullPath, "/");
+        strcat(fullPath, curr);
+
+        if (stat(fullPath, &s) != 0)
+        {
+            if (mkdir(fullPath, 0777) != 0)
+            {
+                HANDLE_ERROR("Failed to create directories");
+            }
+        }
+        curr = strtok(NULL, "/");
+    }
+}
+
 // check that input is a valid csv
 int is_valid_csv(const char* filename)
 {
@@ -77,19 +153,25 @@ int main(int argc, char* argv[])
     }
     // can we estimate this at the beginning? at most 2^32 acesses * rough_count
     int cycles = 10000000;
-    // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf
+    // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf // 2012
+    // https://www.intel.com/content/dam/doc/manual/64-ia-32-architectures-optimization-manual.pdf#G9.83205 section 2.1.5  // 2024
+    // often l1CacheLines and L2CacheLines will around 32 KB or 256KB which would correspoint to around 4000 Cache lines
+    // and we have to scale down here a little bit
+    // testing this is the goal anyways
     unsigned cacheLineSize = 64;
     unsigned l1CacheLines = 32;
 
-    unsigned l2CacheLines = 128; // usually 4 times l1CacheLines
+    unsigned l2CacheLines = 128; // usually 4 to 8 times l1CacheLines
     // and
     // https://colin-scott.github.io/personal_website/research/interactive_latency.html
+    // https://www.anandtech.com/show/14664/testing-intel-ice-lake-10nm/2
+    //
     // assuming 4 Ghz CPU
     unsigned l1CacheLatency = 4;
     unsigned l2CacheLatency = 16;
     unsigned memoryLatency = 400;
 
-    const char* tracefile = NULL;
+    char* tracefile = NULL;
     char* inputfile;
 
     int opt;
@@ -129,11 +211,12 @@ int main(int argc, char* argv[])
             // Not a negative number check + checking that it is at least 4
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong < 4) {
+            if (*endptr != '\0' || valueLong < 4)
+            {
                 HANDLE_ERROR("cache line size must be at least 4");
             }
 
-            cacheLineSize = (unsigned int) valueLong;
+            cacheLineSize = (unsigned int)valueLong;
             if (!is_power_of_two(cacheLineSize))
             {
                 HANDLE_ERROR("cache line size must be power of 2");
@@ -144,11 +227,12 @@ int main(int argc, char* argv[])
             // Not a negative number check
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong <= 0) {
+            if (*endptr != '\0' || valueLong <= 0)
+            {
                 HANDLE_ERROR("l1 cache lines must be positive");
             }
 
-            l1CacheLines = (unsigned int) valueLong;
+            l1CacheLines = (unsigned int)valueLong;
             if (l1CacheLines < 2)
             {
                 HANDLE_ERROR("l1 cache lines must be greater than 2 to handel unaligned access sensible");
@@ -163,16 +247,18 @@ int main(int argc, char* argv[])
             // Not a negative number check
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong < 0) {
+            if (*endptr != '\0' || valueLong < 0)
+            {
                 HANDLE_ERROR("l2 cache lines must be positive");
             }
 
-            // Cache is smaller than memory (2^32 bytes) check
-            if (valueLong * (long) cacheLineSize >= 0xFFFFFFFF) {
+        // Cache is smaller than memory (2^32 bytes) check
+            if (valueLong * (long)cacheLineSize >= 0xFFFFFFFF)
+            {
                 HANDLE_ERROR("cache size should be smaller than memory");
             }
 
-            l2CacheLines = (unsigned int) valueLong;
+            l2CacheLines = (unsigned int)valueLong;
             if (!is_power_of_two(l1CacheLines))
             {
                 HANDLE_ERROR("l2 cache lines must be power of 2");
@@ -187,22 +273,24 @@ int main(int argc, char* argv[])
             // Not a negative number check
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong < 0) {
+            if (*endptr != '\0' || valueLong < 0)
+            {
                 HANDLE_ERROR("l1 Latency must be not negative");
             }
 
-            l1CacheLatency = (unsigned int) valueLong;
+            l1CacheLatency = (unsigned int)valueLong;
             printf("l1CacheLatency: %d\n", l1CacheLatency);
             break;
         case 5:
             // Not a negative number check
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong < 0) {
+            if (*endptr != '\0' || valueLong < 0)
+            {
                 HANDLE_ERROR("l2 Latency must be not negative");
             }
 
-            l2CacheLatency = (unsigned int) valueLong;
+            l2CacheLatency = (unsigned int)valueLong;
             if (l2CacheLatency < l1CacheLatency)
             {
                 HANDLE_ERROR("l2 Latency must be greater than that of l1");
@@ -213,11 +301,12 @@ int main(int argc, char* argv[])
             // Not a negative number check
             valueLong = strtol(optarg, &endptr, 10);
 
-            if (*endptr != '\0' || valueLong < 0) {
+            if (*endptr != '\0' || valueLong < 0)
+            {
                 HANDLE_ERROR("memory Latency must be not negative");
             }
 
-            memoryLatency = (unsigned int) valueLong;
+            memoryLatency = (unsigned int)valueLong;
             if (memoryLatency < l2CacheLatency)
             {
                 HANDLE_ERROR("memory Latency must be greater than that of l2");
@@ -225,7 +314,8 @@ int main(int argc, char* argv[])
             printf("memoryLatency: %d\n", memoryLatency);
             break;
         case 7:
-            tracefile = optarg;
+            // If filepath starts with '~', it is expanded
+            tracefile = expand_path(optarg);
             printf("tracefile: %s\n", tracefile);
             break;
         case 'h':
@@ -238,11 +328,10 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    if(tracefile!=NULL){
-        if(strchr(tracefile,'/')!=NULL){ //this is a path
-            HANDLE_ERROR("name of tracefile should not be a path");
-        }
-    }
+
+    // Creating directories on the path of the tracefile if needed
+    create_dir(tracefile);
+
     if (optind >= argc && optind != 1)
     {
         usage(argv[0]);
@@ -250,7 +339,8 @@ int main(int argc, char* argv[])
     }
     else
     {
-        inputfile = argv[optind];
+        // If filepath starts with '~', it is expanded
+        inputfile = expand_path(argv[optind]);
         printf("%s\n", inputfile);
         if (!is_valid_csv(inputfile))
         {
