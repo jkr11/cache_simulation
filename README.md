@@ -55,7 +55,7 @@ Die Literaturrecherche ergab, dass die Latenzen (hier normalisiert über einen 4
 
 Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
 
-Die Korrektheit von Ein/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
+Die Korrektheit von Ein-/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
 
 Manche der Testdaten wurden über python generiert, um möglichst einfach zufällige dicht- und weitverteilte Zugriffsfolgen zu bekommen (generate.py).
 
@@ -73,7 +73,7 @@ Das Projekt verifiziert die erwartete Reduktion der Zugriffszeiten.
 ## Beitrag
 
 ### Xuanqi Meng
-Entwicklung von einer Version von 3 Module und die Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
+Entwicklung von einer Version von 3 Modulen und der Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
 
 Teilweise Debuggen und Logikoptimierung (Modulensynchronisation und Hit/Misszähler). 
 
@@ -89,9 +89,9 @@ Entwickeln einer nur in Struktur verwendeten Cache-Simulation.
 ### Artem Bilovol
 Entwicklung von einer Version von 3 Module und die Simulation (nicht als abzugebene Vorlage ausgewählt)
 
-Erstellen von Tests zur korrekten Funktionalität des Cache (tests/)
+Erstellen Teste zur korrekten Funktionalität des Cache (tests/)
 
-Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle:
+Debuggen, insbesondere bei Behandlung der Dateipfade und Randfälle
 
 Zusammenfassung und Ausblick von Folien
 
