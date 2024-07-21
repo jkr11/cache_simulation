@@ -134,7 +134,7 @@ void create_dir(const char* path)
     }
 
     // Checking if directories exist and writable
-    if (access(directories, F_OK) == 0 || access(directories, W_OK) == 0)
+    if (access(directories, F_OK) == -1 || access(directories, W_OK) == -1)
     {
         HANDLE_ERROR("Failed to create directories for the tracefile or no permissions to write there");
     }
