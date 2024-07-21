@@ -53,7 +53,7 @@ Die Literaturrecherche ergab, dass die Latenzen (hier normalisiert über einen 4
 
 ## Methodik und Messumgebung
 
-Die Simulation würde in SystemC durchgeführt, kleine Besipiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
+Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
 
 Die Korrektheit von Ein/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
 
@@ -81,3 +81,12 @@ Entwurf von Schaltung der entsprechenden Programmlogik.
 ### Jeremias Rieser 
 
 ### Artem Bilovol
+Erstellen und Ausführen von Tests (einer mit manuellen Eingaben und einer mit zufällig generierten Werten) zur Überprüfung der korrekten Funktionalität des Cache (test_data_validity in tests/)
+
+Debuggen, insbesondere:
+    - korrekte Behandlung der Pfade für Tracefile und Inputfile (Funktionen expand_path und create_dir in main.c)
+    - Randfälle und Fehlermeldung für andere Kommandozeilenparameter (negative Werte, Cache ist großer als Speicher usw)
+
+Zusammenfassung und Ausblick (Analyse Bereiche für Erweiterung und Verbesserung des Projekts)
+
+Entwicklung von einer Version von 3 Module und die Simulation (wurde nicht als abzugebene Vorlage ausgewählt)
