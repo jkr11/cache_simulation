@@ -36,46 +36,30 @@ SC_MODULE(MEMORY){
         while(true){
             wait();
             if(requestIncoming.read()){
-                #ifdef MEMLOG_TIME
-                std::cout<<"memory request incomming From L2 at time: "<<sc_time_stamp()<<std::endl;
-                #endif
+
                 ready.write(false);
                 wait(2*latency,SC_NS);
                 
                 uint32_t address = addr.read().to_uint();
                 if(rw.read()){ // true for write
-                    #ifdef MEMLOG
-                    std::cout<< "memory recieved data in binary: "<< rData.read().to_string()<<std::endl;
-                    #endif
+
                     for(int i = 0; i< 4; i++){
                         internal[address+i] = rData.read().range((i+1)*8-1,i*8).to_uint();
-                        #ifdef MEMLOG
-                        std::cout<< "written into address: "<< address+i<<" with data: "<< std::hex << std::setw(1) << std::setfill('0')<< rData.read().range((i+1)*8-1,i*8).to_uint()<<std::endl;
-                        #endif
                     }
                 }else{ // false for read
                     sc_bv<32> data;
                     for(int i = 0; i< 4;i++){
                         if (internal.find(address+i)== internal.end()){
                             data.range((i+1)*8-1,i*8) = 0x00;
-                            #ifdef MEMLOG
-                            std::cout<< "read from address: "<< address+i<<" with data: 0x00"<<std::endl;
-                            #endif
                         }
                         else{
                             data.range((i+1)*8-1,i*8) = internal[address+i];
-                            #ifdef MEMLOG
-                            std::cout<< "read from address: "<< address+i<<" with data: "<< std::hex << std::setw(2) << std::setfill('0')<<(int)internal[address+i]<<std::endl;
-                            #endif
                             }
 
                     }
                     wData.write(data);
                 }
                 ready.write(true);
-                #ifdef MEMLOG_TIME
-                std::cout<<"memory finished current operation at time: "<<sc_time_stamp()<<std::endl;
-                #endif
             }else{
                 ready.write(true);
             }
