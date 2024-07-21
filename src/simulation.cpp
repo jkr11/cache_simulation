@@ -228,11 +228,16 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   GatterCount += (L2tagbits+1+cacheLineSize*8)*l2CacheLines + 32*4 + 15 +27 +21+128+160+160+64 +160 + 5*offsetLength + 128;
   GatterCount += 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*4;
 
-  if(allDone){
-    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
-  }
-  else{
-    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
+  if (allDone) {
+    return {static_cast<size_t>(i),
+            static_cast<size_t>(l1Cache.miss + l2Cache.miss),
+            static_cast<size_t>(l1Cache.hits + l2Cache.hits),
+            GatterCount};
+  } else {
+    return {static_cast<size_t>(SIZE_MAX),
+            static_cast<size_t>(l1Cache.miss + l2Cache.miss),
+            static_cast<size_t>(l1Cache.hits + l2Cache.hits),
+            GatterCount};
   }
 }
 

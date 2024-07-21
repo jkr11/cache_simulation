@@ -1,5 +1,5 @@
-#ifndef CACEHL1_CPP
-#define CACEHL1_CPP
+#ifndef CACHEL1_CPP
+#define CACHEL1_CPP
 
 #include <systemc>
 #include <systemc.h>
@@ -61,8 +61,8 @@ SC_MODULE(CACHEL1){
         this->cacheLineSize = cacheLineSize;
         hits = 0;
         miss = 0;
-        offsetLength = (int)(log(cacheLineSize)/log(2));
-        indexLength = (int)(log(cacheLines)/log(2));
+        offsetLength = static_cast<int>(log(cacheLineSize)/log(2));
+        indexLength = static_cast<int>(log(cacheLines)/log(2));
         tagbits = 32 - offsetLength-indexLength;
 
         tagOffset = 32-tagbits;
