@@ -10,18 +10,6 @@ Das Ziel des Projektes war die Implementierung eines zweistufigen direkt assozia
 
 ## Implementierung
 
-### Struktur
-
-```bash
-- project/
-  - include/ #  enthät globale definierungen von z.B. Request und Result, HANDLE_ERROR etc ...
-  - src/ # enthält die gesamte Implementierung des Caches (C++) und des Rahmenprogramms
-  - test/ # enthält code und inputs zum testen der implementierung
-  ...
-- Makefile # make project / make clean
-- test.sh # kompiliert und lässt mit kleinem Beispiel laufen
-...
-```
 ### Logik
 
 Darstellung der Cachelines |tag|data|empty als struct
@@ -52,9 +40,11 @@ da die innere Logik von Memory nicht für die Simulation relevant ist.
 
 ### Berechnung von Hit und Miss, cycles
 
+Die totale Hit und Miss ist eine Summe von den Zählern in L1 und L2.
+
 Bei Zeilenübergreifenden Zugriffen haben wir uns entschieden, dass die latency des L1-Caches doppelt gezählt wird, da unsere Implementierung dies in 2 Zugriffe aufteilt.
 
-Das Zählen der Cycles selbst findet in run_simulation statt, die Latenzen werden mithilfe von wait(latency) an die simulationsmethode weitergegeben.
+Das Zählen der Cycles selbst findet in run_simulation statt, die Latenzen werden mithilfe von wait(2*latency,SC_NS) jeweils in 3 Modulen realisiert.
 
 
 ## Literaturrecherche
@@ -64,6 +54,8 @@ Die Literaturrecherche ergab, dass die Latenzen (hier normalisiert über einen 4
 ## Methodik und Messumgebung
 
 Die Simulation würde in SystemC durchgeführt, kleine Besipiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
+
+Die Korrektheit von Ein/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
 
 Manche der Testdaten wurden über python generiert, um möglichst einfach zufällige dicht- und weitverteilte Zugriffsfolgen zu bekommen (generate.py).
 
