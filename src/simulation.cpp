@@ -214,7 +214,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         2 * 1-bit-2-to-1 MUX: 2 * 4
         CachelineSize-bit-2-to-1 MUX: CachelineSize*4
         CachelineSize * 32-bit-2-to-1 MUX : CachelineSize*32*4
-        Kein Demux n ̈otig, da wir kein 32-bit Daten auslesen sollen
+        Kein Demux nötig, da wir kein 32-bit Daten auslesen sollen
   */
   size_t GatterCount = 0;
   int offsetLength = (int)(log(cacheLineSize)/log(2));

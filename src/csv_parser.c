@@ -67,6 +67,10 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
         free(requests);
         HANDLE_ERROR_FMT("Invalid format on line %d\n", ln);
       }
+    } else if (type_str[0] != 'R') {// type_str isnt 'R' or 'W'
+      fclose(file);
+      free(requests);
+      HANDLE_ERROR_FMT("re not R or W format on line %d\n", ln);
     }
 
     req->we = (type_str[0] == 'W') ? 1 : 0;

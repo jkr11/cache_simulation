@@ -24,7 +24,6 @@ if [ ! -f "./test_data_validity/tester" ]; then
   	make -C "$TESTER_DIR" || { echo "Failed to make a tester"; exit 1; }
   	echo "Tester is ready"
 fi
-
 for i in $(seq 1 "$ITER")
 do
 
@@ -41,9 +40,9 @@ do
 		L1LINES=$L2LINES
 	fi	
 	
-	MEMLAT=$(( (RANDOM * RANDOM) % 100000 ))
-	L2LAT=$(( RANDOM * RANDOM % MEMLAT ))
-	L1LAT=$(( RANDOM * RANDOM % L2LAT ))
+	MEMLAT=12 #$(( (RANDOM * RANDOM) % 100000 ))
+	L2LAT=5 #$(( RANDOM * RANDOM % MEMLAT ))
+	L1LAT=3 #$(( RANDOM * RANDOM % L2LAT ))
 	
 	for INPUTFILE in ../examples/*.csv; do
 		if [ -f "$INPUTFILE" ]; then

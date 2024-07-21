@@ -35,7 +35,7 @@ accesses = []
 num_operations = 1000
 for i in range(num_operations):
     base = random.choice(base_addresses)
-    offset = random.randint(0, 3)
+    offset = random.randint(0, 7)
     address = base + offset
     if random.choice([True, False]):
         accesses.append(["R", f"0x{address:08X}", ""])
@@ -43,7 +43,7 @@ for i in range(num_operations):
         data = random.choice(data_values)
         accesses.append(["W", f"0x{address:08X}", data])
 
-file_path = "cache_accesses.csv"
+file_path = "cache_accesses1.csv"
 with open(file_path, mode="w", newline="") as file:
     writer = csv.writer(file)
     writer.writerows(accesses)
