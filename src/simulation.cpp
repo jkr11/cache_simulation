@@ -83,7 +83,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   memory.rData(dataFromL2ToMem);
   memory.wData(dataFromMemToL2);
   memory.ready(readyFromMemToL2);
-  sc_trace_file *wf;
+  sc_trace_file *wf = nullptr;
   if(tracefile!=NULL){
     wf = sc_create_vcd_trace_file(tracefile);
     wf->set_time_unit(1,SC_NS);
@@ -110,7 +110,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
     
   }
 
-  int indexForInput = 0;
+  size_t indexForInput = 0;
   bool allDone = false;
 
   // one tick for initialization
@@ -122,7 +122,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   bool lastR = false;
   int i;
   for(i = 0; i < cycles ; i++){
-    if((size_t)indexForInput == numRequests){
+    if(indexForInput == numRequests){
       if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){ // wait until all module finish their current operation
         if(lastR){// store the last read Data back to request
           requests[indexForInput-1].data = dataFromL1.read().to_int();
@@ -131,7 +131,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         break;
       }
     }
-    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&(size_t)indexForInput<numRequests){ // if all modules are ready for operation
+    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&indexForInput<numRequests){ // if all modules are ready for operation
       if(lastR){// store the read Data back to request
         requests[indexForInput-1].data = dataFromL1.read().to_int();
       }
@@ -156,7 +156,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
     sc_start(1,SC_NS);
   }
   sc_stop();
-  if(tracefile!=NULL){
+  if(wf != nullptr){
     sc_close_vcd_trace_file(wf);
   }
   /* Gatter Calculation:
@@ -216,7 +216,7 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         CachelineSize * 32-bit-2-to-1 MUX : CachelineSize*32*4
         Kein Demux n ̈otig, da wir kein 32-bit Daten auslesen sollen
   */
-  int GatterCount = 0;
+  size_t GatterCount = 0;
   int offsetLength = (int)(log(cacheLineSize)/log(2));
   int L1indexLength = (int)(log(l1CacheLines)/log(2));
   int L1tagbits = 32 - offsetLength-L1indexLength;
@@ -229,10 +229,10 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   GatterCount += 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*4;
 
   if(allDone){
-    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),(size_t)GatterCount};
+    return {(size_t)i,(size_t)(l1Cache.miss+l2Cache.miss),(size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
   }
   else{
-    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits), (size_t)GatterCount};
+    return {SIZE_MAX, (size_t)(l1Cache.miss+l2Cache.miss), (size_t)(l1Cache.hits+l2Cache.hits),GatterCount};
   }
 }
 

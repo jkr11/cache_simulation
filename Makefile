@@ -4,8 +4,8 @@ CC = gcc
 CXX = g++
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -pedantic -g -std=c17 
-CXXFLAGS = -Wall -Wextra -pedantic -g -std=c++14 -Iinclude -I$(SYSTEMC_HOME)/include
+CFLAGS = -Wall -Wextra -pedantic  -std=c17 
+CXXFLAGS = -Wall -Wextra -pedantic  -std=c++14 -Iinclude -I$(SYSTEMC_HOME)/include
 
 # Linker flags
 LDFLAGS = -L$(SYSTEMC_HOME)/lib -lsystemc -lm -lstdc++
@@ -24,16 +24,30 @@ EXEC = project
 
 
 
-all: $(EXEC) 
+all: debug
+
+debug: CFLAGS += -g
+debug: CXXFLAGS += -g
+debug: $(EXEC)
+
+# -Wno-aggressive-loop-optimizations in memory.cpp at to_uint of sc_bv<8> DO NOT USE
+# -O1 works fine
+release: CFLAGS += -O2
+release: CXXFLAGS += -O2
+release: $(EXEC)
+
 $(EXEC): $(COBJS) $(CPPOBJS)
 	$(CXX) $(COBJS) $(CPPOBJS) $(LDFLAGS) -o $@
 
 
 
+# Compile C src
 src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-src/%.o: src/%.
+# Compile C++ src
+src/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 
