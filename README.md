@@ -1,86 +1,83 @@
-# gra_project_test
 
-## How to use
-Put this in the workspace you used for all other artemis projets, so that your systemc file is besides this respository
-```bash
-git clone https://github.com/jkr11/gra_project_test.git
-git checkout -b <personal_branch>
-# to push
-git add <file>
-git commit -m "<message>"
-git push origin HEAD
-```
-then open a pull request and merge it.
 
-We should also make sure to test everything here and then everyone commits their own files to Artemis so we can track who did what (organization will check for this).
+# GRA TEAM 192
 
-## TODOS
+## Überblick
 
-### codestyle
+### Aufgabestellung 
 
-would just follow the ÜL here, so pascalCase for variables and snake_case for functions 
+Das Ziel des Projektes war die Implementierung eines zweistufigen direkt assoziativen Caches mithilfe von SystemC und einem C-Rahmenprogramm. Der Cache sollte in zwei Ebenen (L1 und L2) arbeiten und eine Speicherhierarchie simulieren.
 
-means i have to refactor some stuff but thats ok
+## Implementierung
 
-for def all upper snake case 
-```C
-#define HANDLE_ERROR(msg) ...
+### Logik
+
+Darstellung der Cachelines |tag|data|empty als struct
+```C++
+struct CacheLine {
+  int tag;
+  uint8_t *bytes;  // Einfachere Byte-adressierung
+  int empty;
+};
 ```
 
-### csv and cli parsing
-
-both of these should work now
-
-actually "if tracefile is NULL no tracefile shoud be created" so this should probably be done in main.c
-
-### Makefile
-
-this might be real hard, as the interop between C <-> C++ <-> systemC is a lot of different paths
-
-also everything needs to be commented
-
-### systemC part
-
-should actually be conceptually easy, but hard to debug
-
-i would propose: 
+Implementierung von 3 SystemC Modulen:
 
 ```C++
-SC_MODULE(CACHE) //this will be L1 and L2
-                 //needs write, read in and hit out
-
-SC_MODULE(MEMORY) // fallback for when both miss
-
-SC_MODULE(CACHE_CONTROLLER) //ma`ages both L1 and L2 and Memory
+SC_MODULE(CACHEL1)
+SC_MODULE(CACHEL2)
+SC_MODULE(MEMORY)
 ```
-Reading further, as far as I understand that both storage (memory) and the replacement strategy should be implemented using gates, (maybe we should ask out tutor here).
-
-But what we could do now is:
-
+welche jeweils den eigentlichen Cache als
 ```C++
-SC_MODULE(Cacheline) { ... }
-
-SC_MODULE(Cache) {
-  ...
-  CacheLine **cachelines;
-  sc_vector<sc_signal<sc_uint<8>>> lru;
-}
+Cachelines* internal;
 ```
-for (relatively) easy LRU replacement.
- 
-### other
+verwalten und
+```C++
+std::unordered_map<uint32_t,uint8_t>  internal;
+```
+da die innere Logik von Memory nicht für die Simulation relevant ist.
 
-feel free to add things like utils for printing any structs and other things
+### Berechnung von Hit und Miss, cycles
 
-maybe write logging for systemC (i dont know if this is possible)
+Die totale Hit und Miss ist eine Summe von den Zählern in L1 und L2.
 
-# Update on 13.06.2024 by Xuanqi
+Bei Zeilenübergreifenden Zugriffen haben wir uns entschieden, dass die latency des L1-Caches doppelt gezählt wird, da unsere Implementierung dies in 2 Zugriffe aufteilt.
 
-I have found out some possible problem in csv_parse which ensures no memory leak when failure comes. I have also updated our logic for invalid input in main.c  
-All modifications are commented.
+Das Zählen der Cycles selbst findet in run_simulation statt, die Latenzen werden mithilfe von wait(2*latency,SC_NS) jeweils in 3 Modulen realisiert.
 
-Furthermore, I have established two SystemC module for our own implementation. I have tried to make sure that we can all have maximal freedom to implement our ideas within this frame.
 
-In these files, I have only written the parameters for in- and output, so that when we put our code together, we don't have to be concerned about the compatibility at least between modules.
+## Literaturrecherche
 
-Have fun guys! 
+Die Literaturrecherche ergab, dass die Latenzen (hier normalisiert über einen 4GHz Prozessor) bei L1 = 3 cycles, L2 = 20 und memory = 50 cycles liegen. Weiter wird in standartmäßigen Implementierungen unaligned memory access verwendet. Direkt assoziative Caches ermöglichen eine einfache Implementierung der Zugriffe und Verwaltung, ebenso vereinfacht die Write-through method die Implementierung (und Kohärenz bzgl. Inklusivität) im vergleich zu z.B. write-back.
+
+## Methodik und Messumgebung
+
+Die Simulation würde in SystemC durchgeführt, kleine Besipiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
+
+Die Korrektheit von Ein/Auslesen durch Cache wurde durch Vergleich mit den Ergebnissen von dem Tester verifiziert, der direkt mit Memory kommuniziert.
+
+Manche der Testdaten wurden über python generiert, um möglichst einfach zufällige dicht- und weitverteilte Zugriffsfolgen zu bekommen (generate.py).
+
+Die Tests selbst wurden mithilfe von .sh files durchgeführt.
+
+## Schaltkreis und Gatteranzahl
+
+der Entwurf von Schaltung ist in Schaltung/ zu finden. Die Berechnung von Gatter ist mit dem Entwurf vergleichbar. 
+
+## Ergebnisse des Projekts
+
+Das Projekt verifiziert die erwartete Reduktion der Zugriffszeiten.
+
+
+## Beitrag
+
+### Xuanqi Meng
+Entwicklung von einer Version von 3 Module und die Simulation, die später von anderen Teamgelied als abzugebene Vorlage gewählt worde. 
+
+Teilweise Debuggen und Logikoptimierung. 
+
+Entwurf von Schaltung der entsprechenden Programmlogik.
+### Jeremias Rieser 
+
+### Artem Bilovol
