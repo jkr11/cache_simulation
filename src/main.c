@@ -16,8 +16,8 @@
 #include "../include/util.h"
 // #include "simulation.h"
 
-#define _DEBUG
-#define _OUT
+//#define _DEBUG
+//#define _OUT
 // is printing to stderr correct? NETBSD does it
 
 static void usage(const char* prog_name)
@@ -64,30 +64,44 @@ static void usage(const char* prog_name)
 char* expand_path(char* path)
 {
     if (path[0] != '~')
-    {
-        return path;
+    {   
+        char* pathDyn = (char*)calloc(strlen(path)+1,sizeof(char));
+        if (pathDyn == NULL){
+            HANDLE_ERROR("Failed to create a path");
+        }
+        strcpy(pathDyn,path);
+        return pathDyn;
     }
 
     // Should not exceed maximal path length
-    char exp[pathconf("/", _PC_PATH_MAX)];
+    long maxL = pathconf("/", _PC_PATH_MAX);
+    if(maxL == -1){
+        HANDLE_ERROR("Failed to create a tracefile");
+    }
+    char* exp = (char*)calloc(maxL,sizeof(char));
+    if (exp == NULL){
+            HANDLE_ERROR("Failed to create a path");
+    }
 
     // Getting the home directory
     const char* home = getenv("HOME");
     if (home == NULL)
     {
+        free(exp);
         HANDLE_ERROR("Failed to create a tracefile");
     }
 
     // Constructing the new path
-    snprintf(exp, sizeof(exp), "%s%s", home, path + 1);
+    snprintf(exp, maxL, "%s%s", home, path + 1);
     char* expPath = (char*)malloc(strlen(exp) + 1);
     if (expPath == NULL)
     {
+        free(exp);
         HANDLE_ERROR("Failed to create a tracefile");
     }
 
     strcpy(expPath, exp);
-
+    free(exp);
     return expPath;
 }
 
@@ -182,7 +196,7 @@ int main(int argc, char* argv[])
     // assuming 4 Ghz CPU
     unsigned l1CacheLatency = 4;
     unsigned l2CacheLatency = 16;
-    unsigned memoryLatency = 400;
+    unsigned memoryLatency = 70;
 
     char* tracefile = NULL;
     char* inputfile;
@@ -349,9 +363,6 @@ int main(int argc, char* argv[])
             break;
         }
     }
-
-
-
     
     if (optind >= argc && optind != 1)
     {
@@ -365,17 +376,20 @@ int main(int argc, char* argv[])
 
         if (strlen(inputfile) > 256)
         {
+            free(inputfile);
             HANDLE_ERROR("Inputfile path is too long");
         }
 
         printf("%s\n", inputfile);
         if (!is_valid_csv(inputfile))
         {
+            free(inputfile);
             HANDLE_ERROR("Input file must be csv");
         }
         // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
         if (access(inputfile, F_OK) != 0)
         {
+            free(inputfile);
             HANDLE_ERROR("Input file does not exist");
         }
     }
@@ -398,6 +412,8 @@ int main(int argc, char* argv[])
     FILE* file = fopen("results.csv", "w+");
     if (file == NULL)
     {
+        free(inputfile);
+        free(requests);
         HANDLE_ERROR("Test file does not exist");
     }
 
@@ -406,7 +422,7 @@ int main(int argc, char* argv[])
 
     fclose(file);
 #endif
-
+    free(inputfile);
     free(requests);
     exit(EXIT_SUCCESS);
 }
