@@ -94,7 +94,7 @@ char* expand_path(char* path)
 // Function to create directories along the path if needed
 void create_dir(const char* path)
 {
-    char tmp[256];
+    char tmp[pathconf("/", _PC_PATH_MAX)];
     strncpy(tmp, path, sizeof(tmp) - 1);
     tmp[sizeof(tmp) - 1] = '\0';
 
@@ -127,10 +127,16 @@ void create_dir(const char* path)
         {
             if (mkdir(fullPath, 0777) != 0)
             {
-                HANDLE_ERROR("Failed to create directories");
+                HANDLE_ERROR("Failed to create directories for the tracefile");
             }
         }
         curr = strtok(NULL, "/");
+    }
+
+    // Checking if directories exist and writable
+    if (access(directories, F_OK) == 0 || access(directories, W_OK) == 0)
+    {
+        HANDLE_ERROR("Failed to create directories for the tracefile or no permissions to write there");
     }
 }
 
@@ -316,6 +322,12 @@ int main(int argc, char* argv[])
         case 7:
             // If filepath starts with '~', it is expanded
             tracefile = expand_path(optarg);
+
+            if (strlen(tracefile) > 256)
+            {
+                HANDLE_ERROR("Tracefile path is too long");
+            }
+
             printf("tracefile: %s\n", tracefile);
             break;
         case 'h':
@@ -341,6 +353,12 @@ int main(int argc, char* argv[])
     {
         // If filepath starts with '~', it is expanded
         inputfile = expand_path(argv[optind]);
+
+        if (strlen(inputfile) > 256)
+        {
+            HANDLE_ERROR("Inputfile path is too long");
+        }
+
         printf("%s\n", inputfile);
         if (!is_valid_csv(inputfile))
         {
