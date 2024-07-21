@@ -51,8 +51,6 @@ Die Literaturrecherche ergab, dass die Latenzen standardmäßig bei L1 = 4 cycle
 
 Die Simulation würde in SystemC durchgeführt, kleine Beispiele mithilfe von gdb und GTKWave (auch für Latenz auf cycle-ebene) analysiert und verifiziert, große Beispiele über .csv Dateien. 
 
-Korrektheit durch Vergleich von Requests die direkt mit memory kommunizieren mit Requests, die mit den Caches als Zwischenschritte kommunizieren.
-
 Die Access csvs sind entweder in test.ipynb oder per Hand generiert, test und analyse mithilfe von .sh und .ipynb.
 
 
