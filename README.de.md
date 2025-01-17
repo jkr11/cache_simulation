@@ -1,4 +1,6 @@
-
+🌍 **Verfügbare Sprachen**:
+- 🇬🇧 [English](README.md)
+- 🇩🇪 [Deutsch](README.de.md)
 
 # GRA TEAM 192
 
