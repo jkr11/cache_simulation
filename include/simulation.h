@@ -5,9 +5,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "types.h"
 
 Result run_simulation(int cycles,
@@ -15,7 +12,7 @@ Result run_simulation(int cycles,
                       unsigned cacheLineSize, unsigned l1CacheLatency,
                       unsigned l2CacheLatency, unsigned memoryLatency,
                       size_t numRequests, struct Request requests[],
-                      const char *tracefile);
+                      const char* tracefile);
 
 #ifdef __cplusplus
 }

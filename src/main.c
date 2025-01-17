@@ -5,26 +5,28 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/stat.h>
+#include <libgen.h>
+#include <limits.h>
+
 #include "../include/csv_parser.h"
 #include "../include/simulation.h"
 #include "../include/types.h"
 #include "../include/util.h"
-// #include "simulation.h"
 
 #define _DEBUG
-#define _OUT
+//#define _OUT
 // is printing to stderr correct? NETBSD does it
 
-
-static void usage(const char *prog_name) {
+static void usage(const char* prog_name) {
   fprintf(stderr, "Usage: %s [options] <input_file>\n", prog_name);
   fprintf(stderr, "Options:\n");
   fprintf(stderr,
           "-c <Zahl> / --cycles <Zahl>     Die Anzahl der Zyklen, die "
           "simuliert x^ sollen.\n");
   fprintf(
-      stderr,
-      "--cacheline-size <Zahl>         Die Größe einer Cachezeile in Byte.\n");
+    stderr,
+    "--cacheline-size <Zahl>         Die Größe einer Cachezeile in Byte.\n");
   fprintf(stderr,
           "--l1-lines <Zahl>               Die Anzahl der Cachezeilen des L1 "
           "Caches.\n");
@@ -55,161 +57,337 @@ static void usage(const char *prog_name) {
           "Programm danach beendet.\n");
 }
 
+// Function to expand the path if starts with '~'
+char* expand_path(char* path) {
+  if (path[0] != '~') {
+    char* pathDyn = (char*)calloc(strlen(path) + 1, sizeof(char));
+    if (pathDyn == NULL) {
+      HANDLE_ERROR("failed to create a path");
+    }
+    strcpy(pathDyn, path);
+    return pathDyn;
+  }
+
+  // Should not exceed maximal path length
+  const long maxL = pathconf("/", _PC_PATH_MAX);
+  if (maxL == -1) {
+    HANDLE_ERROR("failed to create a tracefile");
+  }
+  char* exp = (char*)calloc(maxL, sizeof(char));
+  if (exp == NULL) {
+    HANDLE_ERROR("failed to create a path");
+  }
+
+  // Getting the home directory
+  const char* home = getenv("HOME");
+  if (home == NULL) {
+    free(exp);
+    HANDLE_ERROR("failed to create a tracefile");
+  }
+
+  // Constructing the new path
+  snprintf(exp, maxL, "%s%s", home, path + 1);
+  char* expPath = (char*)malloc(strlen(exp) + 1);
+  if (expPath == NULL) {
+    free(exp);
+    HANDLE_ERROR("failed to create a tracefile");
+  }
+
+  strcpy(expPath, exp);
+  free(exp);
+  return expPath;
+}
+
+// Function to create directories along the path if needed
+void create_dir(const char* path) {
+  char tmp[pathconf("/", _PC_PATH_MAX)];
+  strncpy(tmp, path, sizeof(tmp) - 1);
+  tmp[sizeof(tmp) - 1] = '\0';
+
+  // Processing directories in the path
+  char* directories = dirname(tmp);
+
+  // This variable is required to check directory properties later
+  struct stat s;
+
+  char dirPath[256];
+  strncpy(dirPath, directories, sizeof(dirPath) - 1);
+  dirPath[sizeof(dirPath) - 1] = '\0';
+
+  const char* curr = strtok(dirPath, "/");
+  char fullPath[1024] = "";
+
+  // Turning a relative path into full (it can start with or without "./")
+  if ((path[0] == '.' && path[1] == '/') ||
+    (path[0] != '.' && path[0] != '/')
+  ) {
+    strcpy(fullPath, ".");
+  }
+
+  // Iterating and creating each required directory
+  while (curr != NULL) {
+    strcat(fullPath, "/");
+    strcat(fullPath, curr);
+
+    if (stat(fullPath, &s) != 0) {
+      if (mkdir(fullPath, 0777) != 0) {
+        HANDLE_ERROR("failed to create directories for the tracefile");
+      }
+    }
+    curr = strtok(NULL, "/");
+  }
+
+  // Checking if directories exist and writable
+  if (access(directories, F_OK) == -1 || access(directories, W_OK) == -1) {
+    HANDLE_ERROR("failed to create directories for the tracefile or no permissions to write there");
+  }
+}
+
 // check that input is a valid csv
-int is_valid_csv(const char *filename) {
-  char *ext = strchr(filename, '.');
+int is_valid_csv(const char* filename) {
+  char* ext = strrchr(filename, '.');
   return ext && strcmp("csv", ext + 1) == 0;
 }
 
-
-int is_power_of_two(int n) { return n > 0 && ((n & (n - 1)) == 0); }
-
-#ifdef _OUT
-void print_inputs(FILE *file, int cycles, unsigned l1CacheLines,
-                  unsigned l2CacheLines, unsigned cacheLineSize,
-                  unsigned l1CacheLatency, unsigned l2CacheLatency,
-                  unsigned memoryLatency) {
-  fprintf(file, "Simulation Inputs:\n");
-  fprintf(file, "Cycles: %d\n", cycles);
-  fprintf(file, "L1 Cache Lines: %u\n", l1CacheLines);
-  fprintf(file, "L2 Cache Lines: %u\n", l2CacheLines);
-  fprintf(file, "Cache Line Size: %u\n", cacheLineSize);
-  fprintf(file, "L1 Cache Latency: %u\n", l1CacheLatency);
-  fprintf(file, "L2 Cache Latency: %u\n", l2CacheLatency);
-  fprintf(file, "Memory Latency: %u\n", memoryLatency);
-  fprintf(file, "\n");
+int is_power_of_two(int n) {
+  return n > 0 && ((n & (n - 1)) == 0);
 }
 
-void print_result_to_file(FILE *file, const Result *result) {
-  fprintf(file, "Simulation Result:\n");
-  fprintf(file, "cycles: %ld\n", result->cycles);
-  fprintf(file, "misses: %ld\n", result->misses);
-  fprintf(file, "hits: %ld\n", result->hits);
-  fprintf(file, "gates: %ld\n", result->primitiveGateCount);
-  fprintf(file, "\n");
-}
 
-#endif
-
-int sc_main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   if (argc == 1) {
     usage(argv[0]);
     exit(EXIT_FAILURE);
   }
-  // all of these have to be changed;
+  // can we estimate this at the beginning? at most 2^32 acesses * rough_count
   int cycles = 10000000;
+  // https://www.cs.princeton.edu/courses/archive/fall15/cos217/reading/x86-64-opt.pdf // 2012
+  // https://www.intel.com/content/dam/doc/manual/64-ia-32-architectures-optimization-manual.pdf#G9.83205 section 2.1.5  // 2024
+  // often l1CacheLines and L2CacheLines will around 32 KB or 256KB which would correspoint to around 4000 Cache lines
+  // and we have to scale down here a little bit
+  // testing this is the goal anyways
+  unsigned cacheLineSize = 64;
   unsigned l1CacheLines = 32;
-  unsigned l2CacheLines = 64;
-  unsigned cacheLineSize = 8;
-  unsigned l1CacheLatency = 5;
-  unsigned l2CacheLatency = 15;
-  unsigned memoryLatency = 30;
-  const char *tracefile =
-      NULL;  // ???   Is this done in systemC or in simulation.cpp
-  char *inputfile;
+
+  unsigned l2CacheLines = 128; // usually 4 to 8 times l1CacheLines
+  // and
+  // https://colin-scott.github.io/personal_website/research/interactive_latency.html
+  // https://www.anandtech.com/show/14664/testing-intel-ice-lake-10nm/2
+  //
+  // assuming 4 Ghz CPU
+  unsigned l1CacheLatency = 4;
+  unsigned l2CacheLatency = 16;
+  unsigned memoryLatency = 70;
+
+  char* tracefile = NULL;
+  char* inputfile;
 
   int opt;
   int option_ind = 0;
 
+  // Additional variables for "not a negative number check"
+  char* endptr;
+  long valueLong;
+
   static struct option long_options[] = {
-      {"cycles", required_argument, 0, 'c'},
-      {"cacheline-size", required_argument, 0, 1},
-      {"l1-lines", required_argument, 0, 2},
-      {"l2-lines", required_argument, 0, 3},
-      {"l1-latency", required_argument, 0, 4},
-      {"l2-latency", required_argument, 0, 5},
-      {"memory-latency", required_argument, 0, 6},
-      {"tf", required_argument, 0, 7},
-      {"help", no_argument, 0, 'h'},
-      {0, 0, 0, 0}};
+    {"cycles", required_argument, 0, 'c'},
+    {"cacheline-size", required_argument, 0, 1},
+    {"l1-lines", required_argument, 0, 2},
+    {"l2-lines", required_argument, 0, 3},
+    {"l1-latency", required_argument, 0, 4},
+    {"l2-latency", required_argument, 0, 5},
+    {"memory-latency", required_argument, 0, 6},
+    {"tf", required_argument, 0, 7},
+    {"help", no_argument, 0, 'h'},
+    {0, 0, 0, 0}
+  };
 
   while ((opt = getopt_long(argc, argv, "c:h", long_options, &option_ind)) !=
-         -1) {
+    -1) {
     switch (opt) {
-      case 'c':
-        cycles = atoi(optarg);
-        printf("cycles: %d\n", cycles);
-        break;
-      case 1:
-        cacheLineSize = atoi(optarg);
-        if (cacheLineSize < 4) {
-          HANDLE_ERROR("cache line size must be greater than 4");
-        }
-        if (!is_power_of_two(cacheLineSize)) {
-          HANDLE_ERROR("cache line size must be power of 2");
-        }
-        printf("cs: %d\n", cacheLineSize);
-        break;
-      case 2:
-        l1CacheLines = atoi(optarg);
-        if (!is_power_of_two(l1CacheLines)) {
-          HANDLE_ERROR("l1 cache lines must be power of 2");
-        }
-        printf("l1l: %d\n", l1CacheLines);
-        break;
-      case 3:
-        l2CacheLines = atoi(optarg);
-        if (!is_power_of_two(l1CacheLines)) {
-          HANDLE_ERROR("l2 cache lines must be power of 2");
-        }
-        if (l2CacheLines < l1CacheLines) {
-          HANDLE_ERROR("l2 cache lines must be greater than that of l1");
-        }
-        printf("l2l: %d\n", l2CacheLines);
-        break;
-      case 4:
-        l1CacheLatency = atoi(optarg);
-        printf("l1la: %d\n", l1CacheLatency);
-        break;
-      case 5:
-        l2CacheLatency = atoi(optarg);
-        if (l2CacheLatency < l1CacheLatency) {
-          HANDLE_ERROR("l2 Latency must be greater than that of l1");
-        }
-        printf("l2la: %d\n", l2CacheLatency);
-        break;
-      case 6:
-        memoryLatency = atoi(optarg);
-        if (memoryLatency < l2CacheLatency) {
-          HANDLE_ERROR("memory Latency must be greater than that of l2");
-        }
-        printf("ml: %d\n", memoryLatency);
-        break;
-      case 7:
-        tracefile = optarg;
-        printf("tf: %s\n", tracefile);
-        break;
-      case 'h':
-        usage(argv[0]);
-        exit(EXIT_SUCCESS);
-        break;
-      default:
-        usage(argv[0]);
-        exit(EXIT_FAILURE);
-        break;
+    case 'c':
+      cycles = atoi(optarg);
+      if (cycles < 0) {
+        HANDLE_ERROR("cycles value must be not negative and not too large");
+      }
+      printf("cycles: %d\n", cycles);
+      break;
+    case 1:
+      // Not a negative number check + checking that it is at least 4
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong < 4) {
+        HANDLE_ERROR("cache line size must be at least 4");
+      }
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("cache line size is too large");
+      }
+
+      cacheLineSize = (unsigned int)valueLong;
+      if (!is_power_of_two(cacheLineSize)) {
+        HANDLE_ERROR("cache line size must be power of 2");
+      }
+      printf("cacheLineSize: %d\n", cacheLineSize);
+      break;
+    case 2:
+      // Not a negative number check
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong <= 0) {
+        HANDLE_ERROR("l1 cache lines value must be positive");
+      }
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("l1 cache lines value is too large");
+      }
+
+      l1CacheLines = (unsigned int)valueLong;
+      if (l1CacheLines < 2) {
+        HANDLE_ERROR("l1 cache lines must be greater than 2 to handle unaligned access sensible");
+      }
+
+      if (!is_power_of_two(l1CacheLines)) {
+        HANDLE_ERROR("l1 cache lines must be power of 2");
+      }
+      printf("l1CacheLines: %d\n", l1CacheLines);
+      break;
+    case 3:
+      // Not a negative number check
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong < 0) {
+        HANDLE_ERROR("l2 cache lines value must be positive");
+      }
+
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("l2 cache lines value is too large");
+      }
+
+    // Cache is smaller than memory (2^32 bytes) check
+      if (valueLong * (long)cacheLineSize >= 0xFFFFFFFF) {
+        HANDLE_ERROR("cache size should be smaller than memory");
+      }
+
+      l2CacheLines = (unsigned int)valueLong;
+      if (!is_power_of_two(l1CacheLines)) {
+        HANDLE_ERROR("l2 cache lines must be power of 2");
+      }
+      if (l2CacheLines < l1CacheLines) {
+        HANDLE_ERROR("l2 cache lines must be greater than that of l1");
+      }
+      printf("l2CacheLines: %d\n", l2CacheLines);
+      break;
+    case 4:
+      // Not a negative number check
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong < 0) {
+        HANDLE_ERROR("l1 Latency must be not negative");
+      }
+
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("l1 latency value is too large");
+      }
+
+      l1CacheLatency = (unsigned int)valueLong;
+      printf("l1CacheLatency: %d\n", l1CacheLatency);
+      break;
+    case 5:
+      // Not a negative number check
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong < 0) {
+        HANDLE_ERROR("l2 Latency must be not negative");
+      }
+
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("l2 latency value is too large");
+      }
+
+      l2CacheLatency = (unsigned int)valueLong;
+      if (l2CacheLatency < l1CacheLatency) {
+        HANDLE_ERROR("l2 Latency must be greater than that of l1");
+      }
+      printf("l2CacheLatency: %d\n", l2CacheLatency);
+      break;
+    case 6:
+      // Not a negative number check
+      valueLong = strtol(optarg, &endptr, 10);
+
+      if (*endptr != '\0' || valueLong < 0) {
+        HANDLE_ERROR("memory latency must be not negative");
+      }
+
+      if (valueLong > UINT_MAX) {
+        HANDLE_ERROR("memory latency value is too large");
+      }
+
+      memoryLatency = (unsigned int)valueLong;
+      if (memoryLatency < l2CacheLatency) {
+        HANDLE_ERROR("memory Latency must be greater than that of l2");
+      }
+      printf("memoryLatency: %d\n", memoryLatency);
+      break;
+    case 7:
+      // If filepath starts with '~', it is expanded
+      tracefile = expand_path(optarg);
+
+      if (strlen(tracefile) > 256) {
+        HANDLE_ERROR("Tracefile path is too long");
+      }
+
+    // Creating directories on the path of the tracefile if needed
+      create_dir(tracefile);
+
+      printf("tracefile: %s\n", tracefile);
+      break;
+    case 'h':
+      usage(argv[0]);
+      exit(EXIT_SUCCESS);
+    default:
+      usage(argv[0]);
+      exit(EXIT_FAILURE);
     }
   }
-  // this is bugged you need at least one cmd option to run example.csv -- bug fixed!
-  //  now only the .csv is missing
-  //  so we can do this by optind
+
   if (optind >= argc && optind != 1) {
+    if (tracefile != NULL) {
+      free(tracefile);
+    }
     usage(argv[0]);
     HANDLE_ERROR("Missing filename");
-  } else {
-    inputfile = argv[optind];
+  }
+  else {
+    // If filepath starts with '~', it is expanded
+    inputfile = expand_path(argv[optind]);
+
+    if (strlen(inputfile) > 256) {
+      if (tracefile != NULL) {
+        free(tracefile);
+      }
+      free(inputfile);
+      HANDLE_ERROR("Inputfile path is too long");
+    }
+
     printf("%s\n", inputfile);
     if (!is_valid_csv(inputfile)) {
+      if (tracefile != NULL) {
+        free(tracefile);
+      }
+      free(inputfile);
       HANDLE_ERROR("Input file must be csv");
     }
     // https://stackoverflow.com/questions/230062/whats-the-best-way-to-check-if-a-file-exists-in-c
-    // TODO: what platform does this even run on?
     if (access(inputfile, F_OK) != 0) {
+      if (tracefile != NULL) {
+        free(tracefile);
+      }
+      free(inputfile);
       HANDLE_ERROR("Input file does not exist");
     }
   }
 
   size_t numRequests;
-  Request *requests = parse_csv(inputfile, &numRequests);
+  Request* requests = parse_csv(inputfile, &numRequests);
 #ifdef _DEBUG
   print_requests(requests, numRequests);
 #endif
@@ -219,22 +397,30 @@ int sc_main(int argc, char *argv[]) {
                           numRequests, requests, tracefile);
 
 #ifdef _DEBUG
-  print_requests(requests,numRequests); // print requests after execution
+  print_requests(requests, numRequests); // print requests after execution with updated data from read
   print_result(&result);
 #endif
-
 #ifdef _OUT
-  FILE *output_file = fopen("output.txt", "a");
-  if (!output_file) {
-    HANDLE_ERROR("Could not open file for writing");
-  }
+    FILE* file = fopen("results.csv", "w+");
+    if (file == NULL)
+    {
+        if(tracefile!=NULL){
+            free(tracefile);
+        }
+        free(inputfile);
+        free(requests);
+        HANDLE_ERROR("Test file does not exist");
+    }
 
-  print_inputs(output_file, cycles, l1CacheLines, l2CacheLines, cacheLineSize,
-               l1CacheLatency, l2CacheLatency, memoryLatency);
+    fprintf(file, "%zu,%zu,%zu,%zu\n", result.cycles, result.misses,
+            result.hits, result.primitiveGateCount);
 
-  print_result_to_file(output_file, &result);
-  fclose(output_file);
+    fclose(file);
 #endif
+  if (tracefile != NULL) {
+    free(tracefile);
+  }
+  free(inputfile);
   free(requests);
   exit(EXIT_SUCCESS);
 }
