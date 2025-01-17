@@ -6,16 +6,16 @@
 
 #include "../include/error.h"
 
-Request *parse_csv(const char *filename, size_t *num_requests) {
-  FILE *file = fopen(filename, "r");
+Request* parse_csv(const char* filename, size_t* num_requests) {
+  FILE* file = fopen(filename, "r");
   if (!file) {
     HANDLE_ERROR_FMT("Could not open file %s", filename);
   }
-  char line[256];  // assuming all lines are vald, technically all lines are
-                   // only of length 3
-  size_t capacity = 10;  // here we can choose any nonzero capacity
+  char line[256]; // assuming all lines are vald, technically all lines are
+  // only of length 3
+  size_t capacity = 10; // here we can choose any nonzero capacity
   *num_requests = 0;
-  Request *requests = (Request *)malloc(capacity * sizeof(Request));
+  Request* requests = (Request*)malloc(capacity * sizeof(Request));
   // free before end
   if (!requests) {
     fclose(file);
@@ -30,8 +30,8 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
       // I would recommend that we use a new pointer for reallocation
       // by failure we need to free the space and exit. We would lose the
       // reference to the original space and therefore have a memory leak
-      Request *newRequests =
-          (Request *)realloc(requests, capacity * sizeof(Request));
+      Request* newRequests =
+        (Request*)realloc(requests, capacity * sizeof(Request));
       if (!newRequests) {
         fclose(file);
         free(requests);
@@ -39,12 +39,12 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
       }
       requests = newRequests;
     }
-    Request *req = &requests[*num_requests];
-    char *type_str = strtok(line, ",");
-    char *address_str = strtok(NULL, ",");
-    char *value_str =
-        strtok(NULL, ",");  // This might be null, if there is a trailing comma
-                            // in the csv this is a newline
+    Request* req = &requests[*num_requests];
+    const char* type_str = strtok(line, ",");
+    const char* address_str = strtok(NULL, ",");
+    const char* value_str =
+      strtok(NULL, ","); // This might be null, if there is a trailing comma
+    // in the csv this is a newline
 
     // same problem here, we have to free it before it ends
 
@@ -62,12 +62,13 @@ Request *parse_csv(const char *filename, size_t *num_requests) {
 
     if (type_str[0] == 'W') {
       if (value_str == NULL || *value_str == '\0' ||
-          *value_str == '\n') {  // Handle empty string case
+        *value_str == '\n') { // Handle empty string case
         fclose(file);
         free(requests);
         HANDLE_ERROR_FMT("There must be input data for a WRITE request %d\n", ln);
       }
-    } else if (type_str[0] != 'R') {// type_str isnt 'R' or 'W'
+    }
+    else if (type_str[0] != 'R') { // type_str isn't 'R' or 'W'
       fclose(file);
       free(requests);
       HANDLE_ERROR_FMT("re not R or W format on line %d\n", ln);

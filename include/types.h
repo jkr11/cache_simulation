@@ -1,14 +1,13 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <stddef.h>  // for size_t
 #include <stdint.h>
-#include <stdio.h>
+#include <cstddef>
 
 typedef struct Request {
   uint32_t addr;
   uint32_t data;
-  int we;  // 0 read 1 write
+  int we; // 0 read 1 write
 } Request;
 
 typedef struct Result {
@@ -20,7 +19,7 @@ typedef struct Result {
 
 typedef struct CacheLine {
   int tag;
-  uint8_t *bytes;
+  uint8_t* bytes;
   int empty;
 } CacheLine;
 

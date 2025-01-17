@@ -1,15 +1,15 @@
 #include "../include/simulation.h"
-#include "../include/util.h"
 #include "../include/types.h"
 #include "cacheL1.cpp"
 #include "cacheL2.cpp"
 #include "memory.cpp"
+#include <cstdint>
 
 Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
                       unsigned cacheLineSize, unsigned l1CacheLatency,
                       unsigned l2CacheLatency, unsigned memoryLatency,
                       size_t numRequests, struct Request requests[],
-                      const char *tracefile) {
+                      const char* tracefile) {
   sc_signal<bool> clk;
 
   sc_signal<bool> writeThrough;
@@ -36,10 +36,10 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   sc_signal<bool> rwFromL2ToMem;
   sc_signal<sc_bv<32>> addressFromL2ToMem;
   sc_signal<sc_bv<32>> dataFromL2ToMem;
-  
-  MEMORY memory("mem",memoryLatency);
-  CACHEL2 l2Cache("l2",l2CacheLatency,l2CacheLines,cacheLineSize,l1CacheLines);
-  CACHEL1 l1Cache("l1",l1CacheLatency,l1CacheLines,cacheLineSize);
+
+  MEMORY memory("mem", memoryLatency);
+  CACHEL2 l2Cache("l2", l2CacheLatency, l2CacheLines, cacheLineSize, l1CacheLines);
+  CACHEL1 l1Cache("l1", l1CacheLatency, l1CacheLines, cacheLineSize);
 
   l1Cache.l2 = l2Cache.internal;
   l2Cache.l1 = l1Cache.internal;
@@ -83,13 +83,13 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
   memory.rData(dataFromL2ToMem);
   memory.wData(dataFromMemToL2);
   memory.ready(readyFromMemToL2);
-  sc_trace_file *wf = nullptr;
-  if(tracefile!=NULL){
+  sc_trace_file* wf = nullptr;
+  if (tracefile != nullptr) {
     wf = sc_create_vcd_trace_file(tracefile);
-    wf->set_time_unit(1,SC_NS);
+    wf->set_time_unit(1, SC_NS);
 
-    sc_trace(wf, clk,"clock");
-    
+    sc_trace(wf, clk, "clock");
+
 
     // signals for oberservation for latency
     sc_trace(wf, readyFromL1, "readyFromL1");
@@ -106,8 +106,6 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
     sc_trace(wf, dataFromL1, "dataFromL1");
     sc_trace(wf, dataFromL2ToL1, "dataFromL2ToL1");
     sc_trace(wf, dataFromMemToL2, "dataFromMemToL2");
-
-    
   }
 
   size_t indexForInput = 0;
@@ -115,48 +113,51 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
 
   // one tick for initialization
   clk.write(true);
-  sc_start(1,SC_NS);
+  sc_start(1, SC_NS);
   clk.write(false);
-  sc_start(1,SC_NS);
+  sc_start(1, SC_NS);
 
   bool lastR = false;
   int i;
-  for(i = 0; i < cycles ; i++){
-    if(indexForInput == numRequests){
-      if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()){ // wait until all module finish their current operation
-        if(lastR){// store the last read Data back to request
-          requests[indexForInput-1].data = dataFromL1.read().to_int();
+  for (i = 0; i < cycles; i++) {
+    if (indexForInput == numRequests) {
+      if (readyFromL1.read() && readyFromL2ToL1.read() && readyFromMemToL2.read()) {
+        // wait until all module finish their current operation
+        if (lastR) { // store the last read Data back to request
+          requests[indexForInput - 1].data = dataFromL1.read().to_int();
         }
         allDone = true;
         break;
       }
     }
-    if(readyFromL1.read()&&readyFromL2ToL1.read()&&readyFromMemToL2.read()&&indexForInput<numRequests){ // if all modules are ready for operation
-      if(lastR){// store the read Data back to request
-        requests[indexForInput-1].data = dataFromL1.read().to_int();
+    if (readyFromL1.read() && readyFromL2ToL1.read() && readyFromMemToL2.read() && indexForInput < numRequests) {
+      // if all modules are ready for operation
+      if (lastR) { // store the read Data back to request
+        requests[indexForInput - 1].data = dataFromL1.read().to_int();
       }
       requestToL1.write(true);
       sc_bv<32> addr = requests[indexForInput].addr;
       addressToL1.write(addr);
       sc_bv<32> inData = requests[indexForInput].data;
       inputDataToL1.write(inData);
-      if(requests[indexForInput].we == 0){
+      if (requests[indexForInput].we == 0) {
         rwToL1.write(false);
         lastR = true;
-      }else{
+      }
+      else {
         rwToL1.write(true);
         lastR = false;
       }
       indexForInput++;
     }
     clk.write(true); // clock running
-    sc_start(1,SC_NS);
+    sc_start(1, SC_NS);
     requestToL1.write(false);
     clk.write(false);
-    sc_start(1,SC_NS);
+    sc_start(1, SC_NS);
   }
   sc_stop();
-  if(wf != nullptr){
+  if (wf != nullptr) {
     sc_close_vcd_trace_file(wf);
   }
   /* Gatter Calculation:
@@ -165,8 +166,8 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
 
       Tag Comparator: : TagLength + TagLength -1 (XOR und OR) + 1 (AND)
 
-      CachelineSize*8-bit-2-to-1 MUX : CachelineSize*8 * 4 
-      
+      CachelineSize*8-bit-2-to-1 MUX : CachelineSize*8 * 4
+
       Control Unit:
       2-to-1 MUX f ̈ur Tag: TagLength * 4
       2-to-1 Mux f ̈ur Index: IndexLength * 4
@@ -217,32 +218,40 @@ Result run_simulation(int cycles, unsigned l1CacheLines, unsigned l2CacheLines,
         Kein Demux nötig, da wir kein 32-bit Daten auslesen sollen
   */
   size_t GatterCount = 0;
-  int offsetLength = (int)(log(cacheLineSize)/log(2));
-  int L1indexLength = (int)(log(l1CacheLines)/log(2));
-  int L1tagbits = 32 - offsetLength-L1indexLength;
-  int L2indexLength = (int)(log(l2CacheLines)/log(2));
-  int L2tagbits = 32 - offsetLength-L2indexLength;
-  
-  GatterCount += (L1tagbits+1+cacheLineSize*8)*l1CacheLines + 2*L1tagbits + (cacheLineSize*8)*4 + L1tagbits*4 + L1indexLength*4 + 20 + 26 + 28;
-  GatterCount += 160 + 5*offsetLength + 128 + 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*7;
-  GatterCount += (L2tagbits+1+cacheLineSize*8)*l2CacheLines + 32*4 + 15 +27 +21+128+160+160+64 +160 + 5*offsetLength + 128;
-  GatterCount += 16*cacheLineSize*5+1 + 8 + cacheLineSize*8 * 4 + cacheLineSize*32*4;
+  int offsetLength = static_cast<int>(log(cacheLineSize) / log(2));
+  int L1indexLength = static_cast<int>(log(l1CacheLines) / log(2));
+  int L1tagbits = 32 - offsetLength - L1indexLength;
+  int L2indexLength = static_cast<int>(log(l2CacheLines) / log(2));
+  int L2tagbits = 32 - offsetLength - L2indexLength;
+
+  GatterCount += (L1tagbits + 1 + cacheLineSize * 8) * l1CacheLines + 2 * L1tagbits + (cacheLineSize * 8) * 4 +
+    L1tagbits * 4 + L1indexLength * 4 + 20 + 26 + 28;
+  GatterCount += 160 + 5 * offsetLength + 128 + 16 * cacheLineSize * 5 + 1 + 8 + cacheLineSize * 8 * 4 + cacheLineSize *
+    32 * 7;
+  GatterCount += (L2tagbits + 1 + cacheLineSize * 8) * l2CacheLines + 32 * 4 + 15 + 27 + 21 + 128 + 160 + 160 + 64 + 160
+    + 5 * offsetLength + 128;
+  GatterCount += 16 * cacheLineSize * 5 + 1 + 8 + cacheLineSize * 8 * 4 + cacheLineSize * 32 * 4;
 
   if (allDone) {
-    return {static_cast<size_t>(i),
-            static_cast<size_t>(l1Cache.miss + l2Cache.miss),
-            static_cast<size_t>(l1Cache.hits + l2Cache.hits),
-            GatterCount};
-  } else {
-    return {static_cast<size_t>(SIZE_MAX),
-            static_cast<size_t>(l1Cache.miss + l2Cache.miss),
-            static_cast<size_t>(l1Cache.hits + l2Cache.hits),
-            GatterCount};
+    return {
+      static_cast<size_t>(i),
+      static_cast<size_t>(l1Cache.miss + l2Cache.miss),
+      static_cast<size_t>(l1Cache.hits + l2Cache.hits),
+      GatterCount
+    };
+  }
+  else {
+    return {
+      static_cast<size_t>(SIZE_MAX),
+      static_cast<size_t>(l1Cache.miss + l2Cache.miss),
+      static_cast<size_t>(l1Cache.hits + l2Cache.hits),
+      GatterCount
+    };
   }
 }
 
-int sc_main(int argc, char* argv[]){
-  (void) argc;
-  (void) argv;
+int sc_main(int argc, char* argv[]) {
+  (void)argc;
+  (void)argv;
   return 0;
 }
