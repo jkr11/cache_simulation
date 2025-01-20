@@ -13,7 +13,7 @@ The cache should operate in two levels (L1 and L2) and simulate a memory hierarc
 ## Implementation
 
 
-Representation of cache lines |tag|data|empty as struct
+Representation of a cache line |tag|data|empty| as a struct
 ```C++
 struct CacheLine {
   int tag;
@@ -29,7 +29,7 @@ SC_MODULE(CACHEL1)
 SC_MODULE(CACHEL2)
 SC_MODULE(MEMORY)
 ```
-with storages
+each with a storage
 ```C++
 Cachelines* internal;
 ```
@@ -43,13 +43,13 @@ The project utilizes unaligned memory access.
 
 The total number of hits and misses is the sum of the counters in L1 and L2.
 
-For cross-row accesses, the L1 cache latency is counted twice, as our implementation splits each access into two.
+For cross-row accesses, the L1 cache latency is counted twice, as the implementation splits each access into two.
 
 Cycle counting occurs in run_simulation, while latencies are handled using wait(2 * latency, SC_NS) in each of the three modules.
 
 ## Literature review
 
-The literature research revealed that the standard latencies are L1 = 4 cycles, L2 = 16 and memory = 400 cycles. Furthermore, unaligned memory access is used in standard implementations. Directly associative caches enable simple implementation of access and management. Write-through simplifies implementation and coherence.
+The literature research revealed that the standard latencies are L1 = 4 cycles, L2 = 16 cycles and memory = 400 cycles. Furthermore, unaligned memory access is used in standard implementations. Directly associative caches enable simple implementation of access and management. Write-through simplifies implementation and coherence.
 
 ## Methodology and measurement environment
 
