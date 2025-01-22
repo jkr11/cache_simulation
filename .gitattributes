@@ -1,0 +1,2 @@
+# Ignoring Jupyter Notebook files when calculating the repository's language statistics
+*.ipynb -linguist-detectable
