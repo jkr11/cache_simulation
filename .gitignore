@@ -1,5 +1,4 @@
 .vscode/*
-tests/test.ipynb linguist-vendored
 
 # Prerequisites
 *.d
