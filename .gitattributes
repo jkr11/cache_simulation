@@ -1,2 +1,5 @@
 # Ignoring Jupyter Notebook files when calculating the repository's language statistics
 *.ipynb -linguist-detectable
+
+# The same for BibTeX bibliography files
+*.bib -linguist-detectable
