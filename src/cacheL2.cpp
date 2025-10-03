@@ -4,7 +4,7 @@
 #include <systemc>
 #include <cmath>
 
-#include "types.h"
+#include "../include/types.h"
 
 //#define L2_DETAIL
 //#define HIT_LOG

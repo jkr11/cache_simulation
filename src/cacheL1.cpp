@@ -4,10 +4,8 @@
 #include <systemc>
 #include <systemc.h>
 #include <cmath>
-#include <iostream>
-#include <iomanip>
-#include "types.h"
-#include "cacheL2.cpp"
+
+#include "../include/types.h"
 
 
 SC_MODULE(CACHEL1 final) {

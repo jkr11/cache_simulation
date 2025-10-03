@@ -1,13 +1,12 @@
 #ifndef MEMORY_CPP
 #define MEMORY_CPP
-#include <iostream>
-#include <iomanip>
-#include <systemc>
+
 #include <systemc.h>
+#include <systemc>
 #include <unordered_map>
 
-//#define MEMLOG
-//#define MEMLOG_TIME
+// #define MEMLOG
+// #define MEMLOG_TIME
 SC_MODULE(MEMORY final) {
   int latency;
   sc_in<bool> clk;
@@ -25,16 +24,17 @@ SC_MODULE(MEMORY final) {
 
   SC_CTOR(MEMORY);
 
-  MEMORY(const sc_module_name& name, const int latency): sc_module(name) {
+  MEMORY(const sc_module_name &name, const int latency) : sc_module(name) {
     this->latency = latency;
     SC_THREAD(run);
     sensitive << clk.pos() << requestIncoming;
   }
 
   /**
-   * @brief this Method is the entry point of Memory, it listens to the clock and requestIncomming then perfroms the required function
-   * the latency will be counted at the beginning of the request processing.
-  */
+   * @brief this Method is the entry point of Memory, it listens to the clock
+   * and requestIncomming then perfroms the required function the latency will
+   * be counted at the beginning of the request processing.
+   */
   [[noreturn]] void run() {
     while (true) {
       wait();
@@ -46,24 +46,22 @@ SC_MODULE(MEMORY final) {
         if (rw.read()) { // true for write
 
           for (int i = 0; i < 4; i++) {
-            internal[address + i] = rData.read().range((i + 1) * 8 - 1, i * 8).to_uint();
+            internal[address + i] =
+                rData.read().range((i + 1) * 8 - 1, i * 8).to_uint();
           }
-        }
-        else { // false for read
+        } else { // false for read
           sc_bv<32> data;
           for (int i = 0; i < 4; i++) {
             if (internal.find(address + i) == internal.end()) {
               data.range((i + 1) * 8 - 1, i * 8) = 0x00;
-            }
-            else {
+            } else {
               data.range((i + 1) * 8 - 1, i * 8) = internal[address + i];
             }
           }
           wData.write(data);
         }
         ready.write(true);
-      }
-      else {
+      } else {
         ready.write(true);
       }
     }
